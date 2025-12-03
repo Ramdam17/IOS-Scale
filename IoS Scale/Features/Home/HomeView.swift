@@ -9,29 +9,85 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var cardsAppeared = false
+    @State private var showingHistory = false
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVGrid(
-                    columns: gridColumns,
-                    spacing: Spacing.md
-                ) {
-                    ForEach(ModalityType.allCases) { modality in
-                        ModalityCardView(modality: modality)
+            ZStack(alignment: .bottomTrailing) {
+                ScrollView {
+                    LazyVGrid(
+                        columns: gridColumns,
+                        spacing: Spacing.md
+                    ) {
+                        ForEach(Array(ModalityType.allCases.enumerated()), id: \.element) { index, modality in
+                            ModalityCardView(modality: modality)
+                                .opacity(cardsAppeared ? 1 : 0)
+                                .offset(y: cardsAppeared ? 0 : 20)
+                                .animation(
+                                    .spring(response: 0.5, dampingFraction: 0.8)
+                                    .delay(Double(index) * 0.05),
+                                    value: cardsAppeared
+                                )
+                        }
                     }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.lg)
+                    .padding(.bottom, Spacing.xxl) // Space for floating button
                 }
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, Spacing.lg)
+                .navigationTitle("IOS Scale")
+                .gradientBackground()
+                
+                // Floating stats button
+                floatingStatsButton
             }
-            .navigationTitle("IOS Scale")
-            .gradientBackground()
+            .sheet(isPresented: $showingHistory) {
+                HistoryPlaceholderView()
+            }
+        }
+        .onAppear {
+            // Trigger staggered card animations
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                cardsAppeared = true
+            }
         }
     }
     
+    // MARK: - Grid Columns
+    
     private var gridColumns: [GridItem] {
-        let minWidth: CGFloat = horizontalSizeClass == .regular ? 350 : 300
-        return [GridItem(.adaptive(minimum: minWidth, maximum: 450), spacing: Spacing.md)]
+        if horizontalSizeClass == .regular {
+            // iPad: 2-column layout
+            return [
+                GridItem(.flexible(), spacing: Spacing.md),
+                GridItem(.flexible(), spacing: Spacing.md)
+            ]
+        } else {
+            // iPhone: single column
+            return [GridItem(.flexible())]
+        }
+    }
+    
+    // MARK: - Floating Stats Button
+    
+    private var floatingStatsButton: some View {
+        Button {
+            showingHistory = true
+            HapticManager.shared.lightImpact()
+        } label: {
+            Image(systemName: "chart.bar.fill")
+                .font(.title2)
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(ColorPalette.primaryButtonGradient)
+                .clipShape(Circle())
+                .shadow(color: ColorPalette.selfCircleCore.opacity(0.3), radius: 8, y: 4)
+        }
+        .padding(.trailing, Spacing.lg)
+        .padding(.bottom, Spacing.lg)
+        .opacity(cardsAppeared ? 1 : 0)
+        .scaleEffect(cardsAppeared ? 1 : 0.5)
+        .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.5), value: cardsAppeared)
     }
 }
 
@@ -39,7 +95,13 @@ struct HomeView: View {
 
 struct ModalityCardView: View {
     let modality: ModalityType
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var isExpanded = false
+    
+    /// Cards are expanded by default on iPad
+    private var defaultExpanded: Bool {
+        horizontalSizeClass == .regular
+    }
     
     var body: some View {
         LiquidGlassCard(tintColor: modality.tintColor, isExpanded: isExpanded) {
@@ -68,11 +130,13 @@ struct ModalityCardView: View {
                     
                     Spacer()
                     
-                    // Expand chevron
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    // Expand chevron (only show on iPhone where cards are collapsed by default)
+                    if !defaultExpanded {
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                    }
                 }
                 
                 // Description (always visible)
@@ -86,15 +150,11 @@ struct ModalityCardView: View {
                     Divider()
                         .padding(.vertical, Spacing.xs)
                     
-                    // Placeholder for animated preview
-                    RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius)
-                        .fill(modality.tintColor.opacity(0.1))
-                        .frame(height: 100)
-                        .overlay {
-                            Text("Preview")
-                                .font(Typography.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                    // Animated preview
+                    ModalityPreviewView(modality: modality)
+                        .frame(height: PreviewConstants.previewHeight)
+                        .background(modality.tintColor.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius))
                     
                     // Start button
                     if modality.isAvailable {
@@ -115,8 +175,17 @@ struct ModalityCardView: View {
         }
         .opacity(modality.isAvailable ? 1.0 : 0.6)
         .onTapGesture {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                isExpanded.toggle()
+            // Only allow collapsing on iPad, always toggle on iPhone
+            if !defaultExpanded || isExpanded {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    isExpanded.toggle()
+                }
+            }
+        }
+        .onAppear {
+            // Set initial expanded state based on device
+            if defaultExpanded {
+                isExpanded = true
             }
         }
     }

@@ -99,8 +99,7 @@ struct ModalityCardView: View {
                     // Start button
                     if modality.isAvailable {
                         NavigationLink {
-                            // TODO: Navigate to measurement view
-                            Text("Measurement View for \(modality.displayName)")
+                            destinationView(for: modality)
                         } label: {
                             Text("Start Session")
                                 .font(Typography.headline)
@@ -119,6 +118,20 @@ struct ModalityCardView: View {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 isExpanded.toggle()
             }
+        }
+    }
+    
+    /// Returns the appropriate measurement view for the modality
+    @ViewBuilder
+    private func destinationView(for modality: ModalityType) -> some View {
+        switch modality {
+        case .basicIOS:
+            BasicIOSView()
+        case .advancedIOS:
+            AdvancedIOSView()
+        default:
+            // Placeholder for future modalities
+            Text("Coming Soon: \(modality.displayName)")
         }
     }
 }

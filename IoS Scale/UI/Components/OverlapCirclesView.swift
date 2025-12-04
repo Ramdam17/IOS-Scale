@@ -108,10 +108,10 @@ struct OverlapCirclesView: View {
         let centerY = containerSize.height * 0.4
         
         // Calculate horizontal positions based on overlap
-        // overlap = 0 -> circles don't touch
-        // overlap = 1 -> circles completely overlap (same position)
-        let maxSeparation = circleDiameter * 1.3  // Circles just touching
-        let minSeparation: CGFloat = 0  // Fully merged
+        // overlap = 0 -> circles just touching (separation = diameter)
+        // overlap = 1 -> circles completely overlap (same position, separation = 0)
+        let maxSeparation = circleDiameter  // Circles just touching when overlap = 0
+        let minSeparation: CGFloat = 0  // Fully merged when overlap = 1
         
         let separation = maxSeparation * (1 - overlapValue)
         

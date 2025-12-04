@@ -21,7 +21,7 @@ struct MeasurementRowView: View {
     }
     
     var body: some View {
-        HStack(spacing: Spacing.md) {
+        HStack(spacing: Spacing.sm) {
             // Index badge
             Text("\(index)")
                 .font(Typography.caption)
@@ -31,75 +31,121 @@ struct MeasurementRowView: View {
                 .background(ColorPalette.selfCircleCore.gradient)
                 .clipShape(Circle())
             
-            // Value bar
-            valueBar
+            // Mini visualization
+            MeasurementVisualizationView(
+                measurement: measurement,
+                modality: modality,
+                size: 44
+            )
+            .background(Color.primary.opacity(0.03))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            
+            // Value info
+            valueInfo
+            
+            Spacer()
             
             // Time
             Text(formattedTime)
                 .font(Typography.caption)
                 .foregroundStyle(.tertiary)
-                .frame(width: 80, alignment: .trailing)
         }
         .padding(.vertical, Spacing.xs)
     }
     
-    // MARK: - Value Bar
+    // MARK: - Value Info
     
-    private var valueBar: some View {
+    @ViewBuilder
+    private var valueInfo: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                Text(String(format: "%.0f%%", measurement.primaryValue * 100))
-                    .font(Typography.body)
-                    .fontWeight(.medium)
-                
-                Spacer()
-                
-                // Secondary values if present
-                if let secondaryValues = measurement.secondaryValues {
-                    secondaryValuesView(secondaryValues)
-                }
-            }
+            // Primary label based on modality
+            primaryValueLabel
             
-            // Progress bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Background
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.primary.opacity(0.1))
-                        .frame(height: 4)
-                    
-                    // Fill
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(
-                            LinearGradient(
-                                colors: [ColorPalette.selfCircleCore, ColorPalette.otherCircleCore],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: geometry.size.width * measurement.primaryValue, height: 4)
-                }
+            // Secondary values if present
+            if let secondaryValues = measurement.secondaryValues {
+                secondaryValuesView(secondaryValues)
             }
-            .frame(height: 4)
         }
+    }
+    
+    /// Primary value label adapted to modality
+    @ViewBuilder
+    private var primaryValueLabel: some View {
+        switch modality {
+        case .setMembership:
+            setMembershipLabel
+        default:
+            Text(String(format: "%.0f%%", measurement.primaryValue * 100))
+                .font(Typography.body)
+                .fontWeight(.medium)
+        }
+    }
+    
+    /// Label for Set Membership showing readable state
+    private var setMembershipLabel: some View {
+        let selfIn = (measurement.secondaryValues?["selfInSet"] ?? 0) > 0.5
+        let otherIn = (measurement.secondaryValues?["otherInSet"] ?? 0) > 0.5
+        
+        let text: String
+        let color: Color
+        
+        switch (selfIn, otherIn) {
+        case (true, true):
+            text = "Same Set"
+            color = Color(hex: "FFD700")
+        case (true, false):
+            text = "Self only"
+            color = ColorPalette.selfCircleCore
+        case (false, true):
+            text = "Other only"
+            color = ColorPalette.otherCircleCore
+        case (false, false):
+            text = "Neither"
+            color = Color.gray
+        }
+        
+        return Text(text)
+            .font(Typography.body)
+            .fontWeight(.medium)
+            .foregroundStyle(color)
     }
     
     // MARK: - Secondary Values
     
     @ViewBuilder
     private func secondaryValuesView(_ values: [String: Double]) -> some View {
-        HStack(spacing: Spacing.sm) {
-            if let selfScale = values[Measurement.SecondaryKey.selfScale.rawValue] {
-                Label(String(format: "S:%.1f", selfScale), systemImage: "person.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+        switch modality {
+        case .advancedIOS:
+            // Show scale values for Advanced IOS
+            HStack(spacing: Spacing.xs) {
+                if let selfScale = values[Measurement.SecondaryKey.selfScale.rawValue] {
+                    Label(String(format: "%.1f×", selfScale), systemImage: "person.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                
+                if let otherScale = values[Measurement.SecondaryKey.otherScale.rawValue] {
+                    Label(String(format: "%.1f×", otherScale), systemImage: "person")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
-            
-            if let otherScale = values[Measurement.SecondaryKey.otherScale.rawValue] {
-                Label(String(format: "O:%.1f", otherScale), systemImage: "person")
+        case .setMembership:
+            // Set Membership shows checkmarks for who's in
+            HStack(spacing: 2) {
+                let selfIn = (values["selfInSet"] ?? 0) > 0.5
+                let otherIn = (values["otherInSet"] ?? 0) > 0.5
+                
+                Image(systemName: selfIn ? "checkmark.circle.fill" : "circle")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(selfIn ? ColorPalette.selfCircleCore : Color.gray.opacity(0.4))
+                
+                Image(systemName: otherIn ? "checkmark.circle.fill" : "circle")
+                    .font(.caption2)
+                    .foregroundStyle(otherIn ? ColorPalette.otherCircleCore : Color.gray.opacity(0.4))
             }
+        default:
+            EmptyView()
         }
     }
 }

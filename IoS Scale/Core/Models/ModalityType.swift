@@ -97,7 +97,7 @@ enum ModalityType: String, Codable, CaseIterable, Identifiable {
     /// Whether the modality is currently available
     var isAvailable: Bool {
         switch self {
-        case .basicIOS, .advancedIOS, .overlap:
+        case .basicIOS, .advancedIOS, .overlap, .setMembership:
             return true
         default:
             return false // Coming in future updates

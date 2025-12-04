@@ -147,33 +147,188 @@ struct SessionDetailView: View {
                 .font(Typography.subheadline)
                 .foregroundStyle(.secondary)
             
-            MeasurementChart(measurements: sortedMeasurements)
-                .frame(height: 150)
+            // Visual grid of measurements
+            measurementVisualizationGrid
         }
         .padding(Spacing.md)
         .glassBackground()
     }
     
+    /// Grid of mini visualizations for each measurement
+    private var measurementVisualizationGrid: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.adaptive(minimum: 70, maximum: 80), spacing: Spacing.sm)
+            ],
+            spacing: Spacing.sm
+        ) {
+            ForEach(Array(sortedMeasurements.enumerated()), id: \.element.id) { index, measurement in
+                VStack(spacing: 4) {
+                    MeasurementVisualizationView(
+                        measurement: measurement,
+                        modality: session.modality,
+                        size: 60
+                    )
+                    .background(Color.primary.opacity(0.03))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    Text("#\(index + 1)")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+    }
+    
     // MARK: - Stats Section
     
     private var statsSection: some View {
-        HStack(spacing: Spacing.md) {
+        VStack(spacing: Spacing.md) {
+            // Universal stats row
+            HStack(spacing: Spacing.md) {
+                StatCard(
+                    title: "Count",
+                    value: "\(session.measurements.count)",
+                    icon: "number"
+                )
+                
+                StatCard(
+                    title: "Average",
+                    value: String(format: "%.0f%%", averageValue * 100),
+                    icon: "chart.line.flattrend.xyaxis"
+                )
+                
+                StatCard(
+                    title: "Range",
+                    value: String(format: "%.0f-%.0f%%", minValue * 100, maxValue * 100),
+                    icon: "arrow.up.arrow.down"
+                )
+            }
+            
+            // Modality-specific stats
+            modalitySpecificStats
+        }
+    }
+    
+    /// Stats specific to each modality type
+    @ViewBuilder
+    private var modalitySpecificStats: some View {
+        switch session.modality {
+        case .setMembership:
+            setMembershipStats
+        case .advancedIOS:
+            advancedIOSStats
+        default:
+            EmptyView()
+        }
+    }
+    
+    // MARK: - Set Membership Stats
+    
+    private var setMembershipStats: some View {
+        let bothIn = session.measurements.filter { measurement in
+            guard let values = measurement.secondaryValues else { return false }
+            let selfIn = (values["selfInSet"] ?? 0) > 0.5
+            let otherIn = (values["otherInSet"] ?? 0) > 0.5
+            return selfIn && otherIn
+        }.count
+        
+        let selfOnly = session.measurements.filter { measurement in
+            guard let values = measurement.secondaryValues else { return false }
+            let selfIn = (values["selfInSet"] ?? 0) > 0.5
+            let otherIn = (values["otherInSet"] ?? 0) > 0.5
+            return selfIn && !otherIn
+        }.count
+        
+        let otherOnly = session.measurements.filter { measurement in
+            guard let values = measurement.secondaryValues else { return false }
+            let selfIn = (values["selfInSet"] ?? 0) > 0.5
+            let otherIn = (values["otherInSet"] ?? 0) > 0.5
+            return !selfIn && otherIn
+        }.count
+        
+        let neither = session.measurements.filter { measurement in
+            guard let values = measurement.secondaryValues else { return measurement.primaryValue < 0.1 }
+            let selfIn = (values["selfInSet"] ?? 0) > 0.5
+            let otherIn = (values["otherInSet"] ?? 0) > 0.5
+            return !selfIn && !otherIn
+        }.count
+        
+        return VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Set Membership Distribution")
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
+            
+            HStack(spacing: Spacing.sm) {
+                membershipStatBadge(
+                    count: bothIn,
+                    label: "Both",
+                    color: Color(hex: "FFD700"),
+                    icon: "checkmark.circle.fill"
+                )
+                
+                membershipStatBadge(
+                    count: selfOnly,
+                    label: "Self only",
+                    color: ColorPalette.selfCircleCore,
+                    icon: "person.fill"
+                )
+                
+                membershipStatBadge(
+                    count: otherOnly,
+                    label: "Other only",
+                    color: ColorPalette.otherCircleCore,
+                    icon: "person"
+                )
+                
+                membershipStatBadge(
+                    count: neither,
+                    label: "Neither",
+                    color: Color.gray,
+                    icon: "xmark.circle"
+                )
+            }
+        }
+        .padding(Spacing.sm)
+        .glassBackground()
+    }
+    
+    private func membershipStatBadge(count: Int, label: String, color: Color, icon: String) -> some View {
+        VStack(spacing: 2) {
+            HStack(spacing: 2) {
+                Image(systemName: icon)
+                    .font(.caption2)
+                Text("\(count)")
+                    .font(Typography.caption)
+                    .fontWeight(.semibold)
+            }
+            .foregroundStyle(color)
+            
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    // MARK: - Advanced IOS Stats
+    
+    private var advancedIOSStats: some View {
+        let avgSelfScale = session.measurements.compactMap { $0.secondaryValues?["selfScale"] ?? $0.secondaryValues?["self_scale"] }.reduce(0, +) / Double(max(1, session.measurements.count))
+        
+        let avgOtherScale = session.measurements.compactMap { $0.secondaryValues?["otherScale"] ?? $0.secondaryValues?["other_scale"] }.reduce(0, +) / Double(max(1, session.measurements.count))
+        
+        return HStack(spacing: Spacing.md) {
             StatCard(
-                title: "Count",
-                value: "\(session.measurements.count)",
-                icon: "number"
+                title: "Avg Self Size",
+                value: String(format: "%.1fx", avgSelfScale),
+                icon: "person.fill"
             )
             
             StatCard(
-                title: "Average",
-                value: String(format: "%.0f%%", averageValue * 100),
-                icon: "chart.line.flattrend.xyaxis"
-            )
-            
-            StatCard(
-                title: "Range",
-                value: String(format: "%.0f-%.0f%%", minValue * 100, maxValue * 100),
-                icon: "arrow.up.arrow.down"
+                title: "Avg Other Size",
+                value: String(format: "%.1fx", avgOtherScale),
+                icon: "person"
             )
         }
     }

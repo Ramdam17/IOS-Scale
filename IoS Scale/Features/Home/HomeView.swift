@@ -235,6 +235,8 @@ struct ModalityCardView: View {
             AdvancedIOSView()
         case .overlap:
             OverlapView()
+        case .setMembership:
+            SetMembershipView()
         default:
             // Placeholder for future modalities
             Text("Coming Soon: \(modality.displayName)")

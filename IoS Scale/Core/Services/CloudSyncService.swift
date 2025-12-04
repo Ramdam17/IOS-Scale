@@ -90,7 +90,7 @@ final class CloudSyncService {
     
     // MARK: - CloudKit Properties
     
-    private let containerIdentifier = "iCloud.com.iosscale.app"
+    private let containerIdentifier = "iCloud.com.remyramadour.iosscale"
     
     @ObservationIgnored
     private var _container: CKContainer?
@@ -141,6 +141,12 @@ final class CloudSyncService {
     
     /// Check if iCloud is available
     func checkiCloudStatus() async -> Bool {
+        // Don't check if sync is disabled
+        guard iCloudSyncEnabled else {
+            self.status = .disabled
+            return false
+        }
+        
         do {
             let status = try await container.accountStatus()
             switch status {
@@ -313,7 +319,9 @@ final class CloudSyncService {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                await self?.checkiCloudStatus()
+                // Only check if sync is enabled to avoid unnecessary container access
+                guard let self = self, self.iCloudSyncEnabled else { return }
+                await self.checkiCloudStatus()
             }
         }
     }

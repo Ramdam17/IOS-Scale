@@ -205,6 +205,10 @@ struct ModalityCardView: View {
             }
         }
         .opacity(modality.isAvailable ? 1.0 : 0.6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(modality.displayName)\(modality.isAvailable ? "" : ", coming soon")")
+        .accessibilityHint(modality.isAvailable ? "Double tap to \(isExpanded ? "collapse" : "expand"), then tap Start Session to begin" : "This modality is not yet available")
+        .accessibilityAddTraits(modality.isAvailable ? .isButton : [])
         .onTapGesture {
             // Only allow collapsing on iPad, always toggle on iPhone
             if !defaultExpanded || isExpanded {

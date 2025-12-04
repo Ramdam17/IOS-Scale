@@ -71,7 +71,10 @@ struct IOSSlider: View {
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDragging)
         }
         .frame(height: thumbDiameter)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Overlap slider")
         .accessibilityValue("\(Int(normalizedValue * 100)) percent")
+        .accessibilityHint("Swipe up or down to adjust")
         .accessibilityAdjustableAction { direction in
             switch direction {
             case .increment:

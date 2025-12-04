@@ -84,6 +84,8 @@ struct BasicIOSView: View {
                                 .background(ColorPalette.primaryButtonGradient)
                                 .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                             }
+                            .accessibilityLabel("Save measurement")
+                            .accessibilityHint("Saves the current position as a measurement")
                             
                             // Exit button
                             Button {
@@ -99,6 +101,9 @@ struct BasicIOSView: View {
                                 .padding(.vertical, Spacing.md)
                                 .background(Color.secondary.opacity(0.1))
                                 .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                            }
+                            .accessibilityLabel("Exit session")
+                            .accessibilityHint("Shows options to save and exit or discard session")
                             }
                         }
                         .padding(.horizontal, Spacing.lg)

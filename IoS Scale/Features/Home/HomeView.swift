@@ -241,6 +241,8 @@ struct ModalityCardView: View {
             ProximityView()
         case .identification:
             IdentificationView()
+        case .projection:
+            ProjectionView()
         default:
             // Placeholder for future modalities
             Text("Coming Soon: \(modality.displayName)")

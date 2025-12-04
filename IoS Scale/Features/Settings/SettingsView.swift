@@ -14,6 +14,7 @@ struct SettingsView: View {
     
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage("reset_behavior") private var resetBehavior = ResetBehavior.resetToDefault.rawValue
     @AppStorage("exportFormat") private var exportFormat = ExportFormat.csv.rawValue
     @AppStorage("decimalSeparator") private var decimalSeparator = DecimalSeparator.point.rawValue
     @AppStorage("includeMetadataInExport") private var includeMetadataInExport = true
@@ -103,10 +104,24 @@ struct SettingsView: View {
                 }
             }
             
+            // Reset behavior picker
+            Picker(selection: $resetBehavior) {
+                ForEach(ResetBehavior.allCases) { behavior in
+                    Text(behavior.displayName).tag(behavior.rawValue)
+                }
+            } label: {
+                Label {
+                    Text("Reset Behavior")
+                } icon: {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+            }
+            .pickerStyle(.menu)
+            
         } header: {
             Label("Behavior", systemImage: "gearshape")
         } footer: {
-            Text("Haptic feedback provides tactile responses when adjusting measurements.")
+            Text("Haptic feedback provides tactile responses. Reset behavior controls circle positions between measurements.")
         }
     }
     

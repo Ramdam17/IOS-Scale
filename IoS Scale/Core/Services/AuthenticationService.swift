@@ -27,32 +27,38 @@ enum BiometricType {
 }
 
 /// Authentication service managing Sign in with Apple and biometric auth
-@MainActor
-final class AuthenticationService: NSObject, ObservableObject {
+@MainActor @Observable
+final class AuthenticationService: NSObject {
     
     // MARK: - Singleton
     
     static let shared = AuthenticationService()
     
-    // MARK: - Published Properties
+    // MARK: - Observable Properties
     
-    @Published private(set) var state: AuthenticationState = .unknown
-    @Published private(set) var currentUserID: String?
-    @Published private(set) var currentUserEmail: String?
-    @Published private(set) var currentUserName: String?
-    @Published private(set) var isAuthenticating = false
-    @Published private(set) var errorMessage: String?
+    private(set) var state: AuthenticationState = .unknown
+    private(set) var currentUserID: String?
+    private(set) var currentUserEmail: String?
+    private(set) var currentUserName: String?
+    private(set) var isAuthenticating = false
+    private(set) var errorMessage: String?
     
     // MARK: - Settings
     
+    @ObservationIgnored
     @AppStorage("biometricAuthEnabled") var biometricAuthEnabled = false
+    @ObservationIgnored
     @AppStorage("lockOnBackground") var lockOnBackground = false
+    @ObservationIgnored
     @AppStorage("appleUserID") private var storedAppleUserID: String?
+    @ObservationIgnored
     @AppStorage("appleUserEmail") private var storedAppleUserEmail: String?
+    @ObservationIgnored
     @AppStorage("appleUserName") private var storedAppleUserName: String?
     
     // MARK: - Private Properties
     
+    @ObservationIgnored
     private let context = LAContext()
     
     // MARK: - Initialization
@@ -394,7 +400,7 @@ extension AuthenticationService: ASAuthorizationControllerDelegate {
 
 /// SwiftUI wrapper for Sign in with Apple button
 struct SignInWithAppleButton: View {
-    @EnvironmentObject private var authService: AuthenticationService
+    @Environment(AuthenticationService.self) private var authService
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {

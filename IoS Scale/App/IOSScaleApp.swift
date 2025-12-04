@@ -11,8 +11,6 @@ import SwiftData
 @main
 struct IOSScaleApp: App {
     @StateObject private var themeManager = ThemeManager()
-    @StateObject private var authService = AuthenticationService.shared
-    @StateObject private var syncService = CloudSyncService.shared
     
     @Environment(\.scenePhase) private var scenePhase
     
@@ -36,21 +34,9 @@ struct IOSScaleApp: App {
     
     var body: some Scene {
         WindowGroup {
-            Group {
-                if authService.state == .locked {
-                    LockScreenView()
-                        .environmentObject(authService)
-                } else {
-                    ContentView()
-                }
-            }
-            .environmentObject(themeManager)
-            .environmentObject(authService)
-            .environmentObject(syncService)
-            .preferredColorScheme(themeManager.colorScheme)
-            .task {
-                await authService.checkAuthenticationOnLaunch()
-            }
+            AppRootView()
+                .environmentObject(themeManager)
+                .preferredColorScheme(themeManager.colorScheme)
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { _, newPhase in
@@ -64,13 +50,15 @@ struct IOSScaleApp: App {
         switch phase {
         case .background:
             // Lock app when going to background (if enabled)
-            authService.lockApp()
+            Task { @MainActor in
+                AuthenticationService.shared.lockApp()
+            }
             
         case .active:
             // Sync when becoming active (if enabled)
-            if syncService.iCloudSyncEnabled {
-                Task {
-                    await syncService.sync()
+            Task { @MainActor in
+                if CloudSyncService.shared.iCloudSyncEnabled {
+                    await CloudSyncService.shared.sync()
                 }
             }
             
@@ -79,6 +67,29 @@ struct IOSScaleApp: App {
             
         @unknown default:
             break
+        }
+    }
+}
+
+// MARK: - App Root View
+
+/// Root view that handles authentication state
+struct AppRootView: View {
+    @State private var authService = AuthenticationService.shared
+    @State private var syncService = CloudSyncService.shared
+    
+    var body: some View {
+        Group {
+            if authService.state == .locked {
+                LockScreenView()
+            } else {
+                ContentView()
+            }
+        }
+        .environment(authService)
+        .environment(syncService)
+        .task {
+            await authService.checkAuthenticationOnLaunch()
         }
     }
 }

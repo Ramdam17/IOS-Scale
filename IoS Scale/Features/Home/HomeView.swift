@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @EnvironmentObject private var syncService: CloudSyncService
+    @Environment(CloudSyncService.self) private var syncService
     @State private var cardsAppeared = false
     @State private var showingHistory = false
     @State private var showingSettings = false

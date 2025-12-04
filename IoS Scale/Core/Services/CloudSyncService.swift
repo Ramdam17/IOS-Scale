@@ -68,29 +68,42 @@ enum SyncStatus: Equatable {
 }
 
 /// CloudKit sync service for sessions and measurements
-@MainActor
-final class CloudSyncService: ObservableObject {
+@MainActor @Observable
+final class CloudSyncService {
     
     // MARK: - Singleton
     
     static let shared = CloudSyncService()
     
-    // MARK: - Published Properties
+    // MARK: - Observable Properties
     
-    @Published private(set) var status: SyncStatus = .idle
-    @Published private(set) var lastSyncDate: Date?
-    @Published private(set) var isSyncing = false
+    private(set) var status: SyncStatus = .idle
+    private(set) var lastSyncDate: Date?
+    private(set) var isSyncing = false
     
     // MARK: - Settings
     
+    @ObservationIgnored
     @AppStorage("iCloudSyncEnabled") var iCloudSyncEnabled = false
+    @ObservationIgnored
     @AppStorage("lastSyncTimestamp") private var lastSyncTimestamp: Double = 0
     
     // MARK: - CloudKit Properties
     
     private let containerIdentifier = "iCloud.com.iosscale.app"
-    private lazy var container = CKContainer(identifier: containerIdentifier)
-    private lazy var privateDatabase = container.privateCloudDatabase
+    
+    @ObservationIgnored
+    private var _container: CKContainer?
+    private var container: CKContainer {
+        if _container == nil {
+            _container = CKContainer(identifier: containerIdentifier)
+        }
+        return _container!
+    }
+    
+    private var privateDatabase: CKDatabase {
+        container.privateCloudDatabase
+    }
     
     // MARK: - Record Types
     
@@ -310,7 +323,7 @@ final class CloudSyncService: ObservableObject {
 
 /// A view displaying the current sync status
 struct SyncStatusView: View {
-    @EnvironmentObject private var syncService: CloudSyncService
+    @Environment(CloudSyncService.self) private var syncService
     
     var body: some View {
         HStack(spacing: Spacing.sm) {
@@ -336,7 +349,7 @@ struct SyncStatusView: View {
 
 /// A button to trigger manual sync
 struct SyncButton: View {
-    @EnvironmentObject private var syncService: CloudSyncService
+    @Environment(CloudSyncService.self) private var syncService
     
     var body: some View {
         Button {
@@ -358,5 +371,5 @@ struct SyncButton: View {
         SyncButton()
     }
     .padding()
-    .environmentObject(CloudSyncService.shared)
+    .environment(CloudSyncService.shared)
 }

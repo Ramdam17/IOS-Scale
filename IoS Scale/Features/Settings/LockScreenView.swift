@@ -9,7 +9,7 @@ import SwiftUI
 
 /// Lock screen view for biometric authentication
 struct LockScreenView: View {
-    @EnvironmentObject private var authService: AuthenticationService
+    @Environment(AuthenticationService.self) private var authService
     @Environment(\.colorScheme) private var colorScheme
     
     @State private var showingPasscodeOption = false
@@ -170,5 +170,5 @@ struct LockScreenView: View {
 
 #Preview {
     LockScreenView()
-        .environmentObject(AuthenticationService.shared)
+        .environment(AuthenticationService.shared)
 }

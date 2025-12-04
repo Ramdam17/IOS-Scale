@@ -11,7 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var themeManager: ThemeManager
-    @EnvironmentObject private var authService: AuthenticationService
+    @Environment(AuthenticationService.self) private var authService
     
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false

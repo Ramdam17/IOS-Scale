@@ -104,7 +104,6 @@ struct BasicIOSView: View {
                             }
                             .accessibilityLabel("Exit session")
                             .accessibilityHint("Shows options to save and exit or discard session")
-                            }
                         }
                         .padding(.horizontal, Spacing.lg)
                     }

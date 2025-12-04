@@ -11,6 +11,7 @@ struct HomeView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var cardsAppeared = false
     @State private var showingHistory = false
+    @State private var showingSettings = false
     
     var body: some View {
         NavigationStack {
@@ -36,6 +37,16 @@ struct HomeView: View {
                     .padding(.bottom, Spacing.xxl) // Space for floating button
                 }
                 .navigationTitle("IOS Scale")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showingSettings = true
+                            HapticManager.shared.lightImpact()
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
+                    }
+                }
                 .gradientBackground()
                 
                 // Floating stats button
@@ -43,6 +54,9 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingHistory) {
                 HistoryView()
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
         .onAppear {

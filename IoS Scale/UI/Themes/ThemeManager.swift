@@ -11,33 +11,24 @@ import Combine
 /// Observable object managing theme state across the app
 @MainActor
 final class ThemeManager: ObservableObject {
-    @Published var currentTheme: ThemeMode {
+    @AppStorage("themeMode") var themeMode: ThemeMode = .system {
         didSet {
-            saveTheme()
+            objectWillChange.send()
         }
     }
     
-    init() {
-        let settings = AppSettings.load()
-        self.currentTheme = settings.theme
-    }
+    init() {}
     
     /// The color scheme to apply, nil for system default
     var colorScheme: ColorScheme? {
-        currentTheme.colorScheme
+        themeMode.colorScheme
     }
     
     /// Cycle through available themes
     func cycleTheme() {
         let allThemes = ThemeMode.allCases
-        guard let currentIndex = allThemes.firstIndex(of: currentTheme) else { return }
+        guard let currentIndex = allThemes.firstIndex(of: themeMode) else { return }
         let nextIndex = (currentIndex + 1) % allThemes.count
-        currentTheme = allThemes[nextIndex]
-    }
-    
-    private func saveTheme() {
-        var settings = AppSettings.load()
-        settings.theme = currentTheme
-        settings.save()
+        themeMode = allThemes[nextIndex]
     }
 }

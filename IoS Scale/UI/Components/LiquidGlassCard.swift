@@ -197,3 +197,43 @@ struct LiquidGlassCard<Content: View>: View {
     .background(ColorPalette.darkBackgroundGradient)
     .preferredColorScheme(.dark)
 }
+
+// MARK: - Glass Background View Modifier
+
+/// A simple glass background modifier for smaller components
+struct GlassBackgroundModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    
+    func body(content: Content) -> some View {
+        content
+            .padding(Spacing.sm)
+            .background(backgroundView)
+            .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius))
+    }
+    
+    @ViewBuilder
+    private var backgroundView: some View {
+        if colorScheme == .dark {
+            RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius)
+                .fill(.regularMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius)
+                        .fill(Color.white.opacity(0.05))
+                )
+        } else {
+            RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius)
+                        .fill(Color.white.opacity(0.3))
+                )
+        }
+    }
+}
+
+extension View {
+    /// Apply a simple glass background effect
+    func glassBackground() -> some View {
+        modifier(GlassBackgroundModifier())
+    }
+}

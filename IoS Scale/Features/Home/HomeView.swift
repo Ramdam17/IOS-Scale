@@ -42,7 +42,7 @@ struct HomeView: View {
                 floatingStatsButton
             }
             .sheet(isPresented: $showingHistory) {
-                HistoryPlaceholderView()
+                HistoryView()
             }
         }
         .onAppear {

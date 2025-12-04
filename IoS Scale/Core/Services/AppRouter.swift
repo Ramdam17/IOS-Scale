@@ -118,7 +118,7 @@ extension View {
         case .advancedIOS:
             AdvancedIOSView()
         case .history:
-            HistoryPlaceholderView()
+            HistoryView()
         case .settings:
             SettingsPlaceholderView()
         case .modality(let modality):

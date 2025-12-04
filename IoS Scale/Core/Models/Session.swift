@@ -78,6 +78,9 @@ final class SessionModel {
     var createdAt: Date
     var notes: String?
     
+    /// Soft delete: when not nil, session is in trash
+    var deletedAt: Date?
+    
     @Relationship(deleteRule: .cascade)
     var measurements: [MeasurementModel] = []
     
@@ -91,11 +94,27 @@ final class SessionModel {
         self.modalityRawValue = modality.rawValue
         self.createdAt = createdAt
         self.notes = notes
+        self.deletedAt = nil
     }
     
     /// Get the modality type
     var modality: ModalityType {
         ModalityType(rawValue: modalityRawValue) ?? .basicIOS
+    }
+    
+    /// Whether the session is in trash
+    var isDeleted: Bool {
+        deletedAt != nil
+    }
+    
+    /// Move to trash (soft delete)
+    func moveToTrash() {
+        deletedAt = Date()
+    }
+    
+    /// Restore from trash
+    func restore() {
+        deletedAt = nil
     }
     
     /// Convert to value type

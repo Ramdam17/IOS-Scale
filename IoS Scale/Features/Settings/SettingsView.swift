@@ -179,7 +179,42 @@ struct SettingsView: View {
                     Image(systemName: "icloud")
                 }
             }
-            .disabled(true) // Coming soon
+            .onChange(of: iCloudSyncEnabled) { _, newValue in
+                if newValue {
+                    Task {
+                        await CloudSyncService.shared.sync()
+                    }
+                }
+            }
+            
+            // Sync status (if enabled)
+            if iCloudSyncEnabled {
+                HStack {
+                    Label {
+                        Text("Status")
+                    } icon: {
+                        Image(systemName: CloudSyncService.shared.status.icon)
+                            .foregroundStyle(CloudSyncService.shared.status.color)
+                    }
+                    Spacer()
+                    Text(CloudSyncService.shared.status.displayText)
+                        .foregroundStyle(.secondary)
+                }
+                
+                // Manual sync button
+                Button {
+                    Task {
+                        await CloudSyncService.shared.sync()
+                    }
+                } label: {
+                    Label {
+                        Text("Sync Now")
+                    } icon: {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                    }
+                }
+                .disabled(CloudSyncService.shared.isSyncing)
+            }
             
             // Trash
             Button {
@@ -207,7 +242,7 @@ struct SettingsView: View {
         } header: {
             Label("Data", systemImage: "externaldrive")
         } footer: {
-            Text("iCloud sync coming soon. Clear All Data will permanently delete all sessions.")
+            Text("iCloud sync keeps your sessions in sync across all your devices. Clear All Data will permanently delete all sessions.")
         }
     }
     

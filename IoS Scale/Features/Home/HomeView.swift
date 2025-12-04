@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @EnvironmentObject private var syncService: CloudSyncService
     @State private var cardsAppeared = false
     @State private var showingHistory = false
     @State private var showingSettings = false
@@ -38,6 +39,22 @@ struct HomeView: View {
                 }
                 .navigationTitle("IOS Scale")
                 .toolbar {
+                    // Sync status indicator
+                    ToolbarItem(placement: .topBarLeading) {
+                        if syncService.iCloudSyncEnabled {
+                            Button {
+                                Task {
+                                    await syncService.sync()
+                                }
+                            } label: {
+                                Image(systemName: syncService.status.icon)
+                                    .foregroundStyle(syncService.status.color)
+                                    .symbolEffect(.pulse, isActive: syncService.isSyncing)
+                            }
+                            .disabled(syncService.isSyncing)
+                        }
+                    }
+                    
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             showingSettings = true

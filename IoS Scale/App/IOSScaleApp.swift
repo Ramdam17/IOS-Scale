@@ -80,12 +80,26 @@ struct AppRootView: View {
     
     var body: some View {
         Group {
-            if authService.state == .locked {
+            switch authService.state {
+            case .unknown:
+                // Loading state
+                ProgressView()
+                    .scaleEffect(1.5)
+                
+            case .onboarding:
+                OnboardingView()
+                    .transition(.opacity)
+                
+            case .locked:
                 LockScreenView()
-            } else {
+                    .transition(.opacity)
+                
+            case .authenticated, .unauthenticated:
                 ContentView()
+                    .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: authService.state)
         .environment(authService)
         .environment(syncService)
         .task {

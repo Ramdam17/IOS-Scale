@@ -13,6 +13,7 @@ import SwiftUI
 /// Authentication state for the app
 enum AuthenticationState: Equatable {
     case unknown
+    case onboarding
     case authenticated
     case unauthenticated
     case locked
@@ -49,6 +50,8 @@ final class AuthenticationService: NSObject {
     @AppStorage("biometricAuthEnabled") var biometricAuthEnabled = false
     @ObservationIgnored
     @AppStorage("lockOnBackground") var lockOnBackground = false
+    @ObservationIgnored
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @ObservationIgnored
     @AppStorage("appleUserID") private var storedAppleUserID: String?
     @ObservationIgnored
@@ -300,7 +303,8 @@ final class AuthenticationService: NSObject {
     
     /// Lock the app (call when going to background if enabled)
     func lockApp() {
-        if biometricAuthEnabled && lockOnBackground {
+        // Only lock if already authenticated (not during onboarding)
+        if biometricAuthEnabled && lockOnBackground && state == .authenticated {
             state = .locked
         }
     }
@@ -315,6 +319,12 @@ final class AuthenticationService: NSObject {
     
     /// Check if authentication is required on launch
     func checkAuthenticationOnLaunch() async {
+        // First launch - show onboarding
+        if !hasCompletedOnboarding {
+            state = .onboarding
+            return
+        }
+        
         // If biometric auth is enabled, require authentication
         if biometricAuthEnabled {
             state = .locked
@@ -322,9 +332,42 @@ final class AuthenticationService: NSObject {
             // Check Apple ID status if user was signed in
             await checkAppleSignInStatus()
         } else {
-            // No auth required
-            state = .authenticated
+            // User completed onboarding but somehow signed out - show onboarding again
+            state = .onboarding
         }
+    }
+    
+    /// Handle Sign in with Apple credential (called from onboarding)
+    func handleAppleSignIn(credential: ASAuthorizationAppleIDCredential) {
+        // Store user information
+        storedAppleUserID = credential.user
+        currentUserID = credential.user
+        
+        // Email and name are only provided on first sign-in
+        if let email = credential.email {
+            storedAppleUserEmail = email
+            currentUserEmail = email
+        }
+        
+        if let fullName = credential.fullName {
+            let name = PersonNameComponentsFormatter().string(from: fullName)
+            if !name.isEmpty {
+                storedAppleUserName = name
+                currentUserName = name
+            }
+        }
+        
+        // Mark onboarding as complete
+        hasCompletedOnboarding = true
+        state = .authenticated
+        HapticManager.shared.success()
+    }
+    
+    /// Reset onboarding (for testing or sign out)
+    func resetOnboarding() {
+        hasCompletedOnboarding = false
+        signOut()
+        state = .onboarding
     }
 }
 

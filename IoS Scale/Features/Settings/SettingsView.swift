@@ -25,6 +25,7 @@ struct SettingsView: View {
     @State private var showClearDataConfirmation = false
     @State private var showEmptyTrashConfirmation = false
     @State private var showTrashView = false
+    @State private var showSignOutConfirmation = false
     
     var body: some View {
         NavigationStack {
@@ -69,6 +70,14 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will permanently delete all sessions and measurements. This action cannot be undone.")
+            }
+            .alert("Sign Out?", isPresented: $showSignOutConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Sign Out", role: .destructive) {
+                    authService.resetOnboarding()
+                }
+            } message: {
+                Text("You will be signed out and returned to the welcome screen. Your local data will remain on this device.")
             }
         }
     }
@@ -312,19 +321,23 @@ struct SettingsView: View {
                     }
                     Spacer()
                     Button("Sign Out") {
-                        authService.signOut()
+                        showSignOutConfirmation = true
                     }
                     .foregroundStyle(.red)
                 }
-            } else {
-                Button {
-                    authService.signInWithApple()
-                } label: {
+            } else if authService.currentUserID != nil {
+                // User is signed in but name not available
+                HStack {
                     Label {
-                        Text("Sign in with Apple")
+                        Text("Signed in with Apple")
                     } icon: {
-                        Image(systemName: "apple.logo")
+                        Image(systemName: "person.crop.circle.fill")
                     }
+                    Spacer()
+                    Button("Sign Out") {
+                        showSignOutConfirmation = true
+                    }
+                    .foregroundStyle(.red)
                 }
             }
             

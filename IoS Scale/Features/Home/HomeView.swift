@@ -245,9 +245,8 @@ struct ModalityCardView: View {
             ProjectionView()
         case .attribution:
             AttributionView()
-        default:
-            // Placeholder for future modalities
-            Text("Coming Soon: \(modality.displayName)")
+        case .observation:
+            ObservationView()
         }
     }
 }

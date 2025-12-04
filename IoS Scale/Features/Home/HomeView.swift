@@ -239,6 +239,8 @@ struct ModalityCardView: View {
             SetMembershipView()
         case .proximity:
             ProximityView()
+        case .identification:
+            IdentificationView()
         default:
             // Placeholder for future modalities
             Text("Coming Soon: \(modality.displayName)")

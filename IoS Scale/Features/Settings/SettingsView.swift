@@ -11,6 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var themeManager: ThemeManager
+    @EnvironmentObject private var authService: AuthenticationService
     
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
@@ -18,6 +19,8 @@ struct SettingsView: View {
     @AppStorage("exportFormat") private var exportFormat = ExportFormat.csv.rawValue
     @AppStorage("decimalSeparator") private var decimalSeparator = DecimalSeparator.point.rawValue
     @AppStorage("includeMetadataInExport") private var includeMetadataInExport = true
+    @AppStorage("biometricAuthEnabled") private var biometricAuthEnabled = false
+    @AppStorage("lockOnBackground") private var lockOnBackground = false
     
     @State private var showClearDataConfirmation = false
     @State private var showEmptyTrashConfirmation = false
@@ -37,6 +40,9 @@ struct SettingsView: View {
                 
                 // Data Section
                 dataSection
+                
+                // Security Section
+                securitySection
                 
                 // About Section
                 aboutSection
@@ -202,6 +208,99 @@ struct SettingsView: View {
             Label("Data", systemImage: "externaldrive")
         } footer: {
             Text("iCloud sync coming soon. Clear All Data will permanently delete all sessions.")
+        }
+    }
+    
+    // MARK: - Security Section
+    
+    private var securitySection: some View {
+        Section {
+            // Biometric auth toggle
+            if authService.isBiometricAvailable {
+                Toggle(isOn: $biometricAuthEnabled) {
+                    Label {
+                        Text("\(authService.biometricName) Lock")
+                    } icon: {
+                        Image(systemName: authService.biometricIcon)
+                    }
+                }
+                .onChange(of: biometricAuthEnabled) { _, newValue in
+                    if newValue {
+                        // Verify biometric works before enabling
+                        Task {
+                            let success = await authService.authenticateWithBiometrics()
+                            if !success {
+                                biometricAuthEnabled = false
+                            } else {
+                                HapticManager.shared.success()
+                            }
+                        }
+                    }
+                }
+                
+                // Lock on background toggle (only if biometric enabled)
+                if biometricAuthEnabled {
+                    Toggle(isOn: $lockOnBackground) {
+                        Label {
+                            Text("Lock When Leaving App")
+                        } icon: {
+                            Image(systemName: "lock.rotation")
+                        }
+                    }
+                }
+            } else {
+                // No biometric available message
+                HStack {
+                    Label {
+                        Text("Biometric Authentication")
+                    } icon: {
+                        Image(systemName: "lock")
+                    }
+                    Spacer()
+                    Text("Not Available")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            // Sign in with Apple section
+            if let userName = authService.currentUserName {
+                HStack {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Signed in as")
+                            Text(userName)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "person.crop.circle.fill")
+                    }
+                    Spacer()
+                    Button("Sign Out") {
+                        authService.signOut()
+                    }
+                    .foregroundStyle(.red)
+                }
+            } else {
+                Button {
+                    authService.signInWithApple()
+                } label: {
+                    Label {
+                        Text("Sign in with Apple")
+                    } icon: {
+                        Image(systemName: "apple.logo")
+                    }
+                }
+            }
+            
+        } header: {
+            Label("Security", systemImage: "lock.shield")
+        } footer: {
+            if authService.isBiometricAvailable {
+                Text("Require \(authService.biometricName) to access the app. Sign in with Apple to sync your data across devices.")
+            } else {
+                Text("Sign in with Apple to sync your data across devices.")
+            }
         }
     }
     

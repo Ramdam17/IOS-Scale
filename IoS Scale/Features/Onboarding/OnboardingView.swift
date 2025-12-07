@@ -124,56 +124,61 @@ private struct WelcomePage: View {
     @State private var animateCircles = false
     
     var body: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            // Animated logo/circles
-            ZStack {
-                // Self circle
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue, .cyan],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-                    .offset(x: animateCircles ? -30 : -60)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    Spacer(minLength: Spacing.lg)
                 
-                // Other circle
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.purple, .pink],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                // Animated circles
+                ZStack {
+                    // Self circle
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.blue, .cyan],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .frame(width: 120, height: 120)
-                    .offset(x: animateCircles ? 30 : 60)
-            }
-            .onAppear {
-                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                    animateCircles = true
+                        .frame(width: 120, height: 120)
+                        .offset(x: animateCircles ? -30 : -60)
+                    
+                    // Other circle
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.purple, .pink],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 120, height: 120)
+                        .offset(x: animateCircles ? 30 : 60)
                 }
-            }
-            
-            VStack(spacing: Spacing.md) {
-                Text("IOS Scale")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                        animateCircles = true
+                    }
+                }
                 
-                Text("Measure intersubjective experiences")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                VStack(spacing: Spacing.md) {
+                    Text("IOS Scale")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    
+                    Text("Measure intersubjective experiences")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                
+                Spacer(minLength: Spacing.lg)
             }
-            
-            Spacer()
-            Spacer()
+            .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+            .padding(.horizontal, Spacing.xl)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(.horizontal, Spacing.xl)
     }
 }
 
@@ -183,39 +188,44 @@ private struct HowItWorksPage: View {
     @State private var overlapValue: CGFloat = 0.3
     
     var body: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            // Mini preview
-            OnboardingCirclesPreview(overlap: $overlapValue)
-                .frame(height: 200)
-            
-            VStack(spacing: Spacing.md) {
-                Text("How It Works")
-                    .font(.title)
-                    .fontWeight(.bold)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    Spacer(minLength: Spacing.lg)
                 
-                Text("Drag the circles to express how close you feel to another person. The overlap represents your sense of connection.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            // Interactive slider
-            VStack(spacing: Spacing.sm) {
-                Text("Try it!")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                // Mini preview
+                OnboardingCirclesPreview(overlap: $overlapValue)
+                    .frame(height: 200)
                 
-                Slider(value: $overlapValue, in: 0...1)
-                    .tint(.accentColor)
+                VStack(spacing: Spacing.md) {
+                    Text("How It Works")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("Drag the circles to express how close you feel to another person. The overlap represents your sense of connection.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Interactive slider
+                VStack(spacing: Spacing.sm) {
+                    Text("Try it!")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                    
+                    Slider(value: $overlapValue, in: 0...1)
+                        .tint(.accentColor)
+                        .frame(maxWidth: 400)
+                }
+                
+                Spacer(minLength: Spacing.lg)
             }
+            .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             .padding(.horizontal, Spacing.xl)
-            
-            Spacer()
-            Spacer()
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(.horizontal, Spacing.xl)
     }
 }
 
@@ -223,39 +233,44 @@ private struct HowItWorksPage: View {
 
 private struct ExportPage: View {
     var body: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            // Export icons
-            HStack(spacing: Spacing.xl) {
-                ExportIconView(icon: "doc.text", label: "CSV")
-                ExportIconView(icon: "doc.plaintext", label: "TSV")
-                ExportIconView(icon: "curlybraces", label: "JSON")
-            }
-            
-            VStack(spacing: Spacing.md) {
-                Text("Save & Export")
-                    .font(.title)
-                    .fontWeight(.bold)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    Spacer(minLength: Spacing.lg)
                 
-                Text("Your data belongs to you. Export your measurements in multiple formats for research or personal records.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                // Export icons
+                HStack(spacing: Spacing.xl) {
+                    ExportIconView(icon: "doc.text", label: "CSV")
+                    ExportIconView(icon: "doc.plaintext", label: "TSV")
+                    ExportIconView(icon: "curlybraces", label: "JSON")
+                }
+                
+                VStack(spacing: Spacing.md) {
+                    Text("Save & Export")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("Your data belongs to you. Export your measurements in multiple formats for research or personal records.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Features list
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    FeatureRow(icon: "square.and.arrow.up", text: "Share via AirDrop, Mail, or Messages")
+                    FeatureRow(icon: "icloud", text: "Sync across all your devices")
+                    FeatureRow(icon: "lock.shield", text: "Your data stays private")
+                }
+                .padding(.top, Spacing.md)
+                
+                Spacer(minLength: Spacing.lg)
             }
-            
-            // Features list
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                FeatureRow(icon: "square.and.arrow.up", text: "Share via AirDrop, Mail, or Messages")
-                FeatureRow(icon: "icloud", text: "Sync across all your devices")
-                FeatureRow(icon: "lock.shield", text: "Your data stays private")
+            .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+            .padding(.horizontal, Spacing.xl)
             }
-            .padding(.top, Spacing.md)
-            
-            Spacer()
-            Spacer()
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(.horizontal, Spacing.xl)
     }
 }
 
@@ -265,42 +280,47 @@ private struct CustomizePage: View {
     @State private var selectedTheme = 0
     
     var body: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            // Theme preview
-            HStack(spacing: Spacing.lg) {
-                ThemePreviewCard(isDark: false, isSelected: selectedTheme == 0)
-                    .onTapGesture { selectedTheme = 0 }
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    Spacer(minLength: Spacing.lg)
                 
-                ThemePreviewCard(isDark: true, isSelected: selectedTheme == 1)
-                    .onTapGesture { selectedTheme = 1 }
-            }
-            .frame(height: 160)
-            
-            VStack(spacing: Spacing.md) {
-                Text("Make It Yours")
-                    .font(.title)
-                    .fontWeight(.bold)
+                // Theme preview
+                HStack(spacing: Spacing.lg) {
+                    ThemePreviewCard(isDark: false, isSelected: selectedTheme == 0)
+                        .onTapGesture { selectedTheme = 0 }
+                    
+                    ThemePreviewCard(isDark: true, isSelected: selectedTheme == 1)
+                        .onTapGesture { selectedTheme = 1 }
+                }
+                .frame(height: 160)
                 
-                Text("Choose your theme, customize measurement behavior, and set up security preferences in Settings.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                VStack(spacing: Spacing.md) {
+                    Text("Make It Yours")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("Choose your theme, customize measurement behavior, and set up security preferences in Settings.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Settings preview
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    FeatureRow(icon: "paintbrush", text: "Light, Dark, or System theme")
+                    FeatureRow(icon: "arrow.counterclockwise", text: "Reset behavior between measurements")
+                    FeatureRow(icon: "faceid", text: "Biometric authentication")
+                }
+                .padding(.top, Spacing.md)
+                
+                Spacer(minLength: Spacing.lg)
             }
-            
-            // Settings preview
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                FeatureRow(icon: "paintbrush", text: "Light, Dark, or System theme")
-                FeatureRow(icon: "arrow.counterclockwise", text: "Reset behavior between measurements")
-                FeatureRow(icon: "faceid", text: "Biometric authentication")
+            .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+            .padding(.horizontal, Spacing.xl)
             }
-            .padding(.top, Spacing.md)
-            
-            Spacer()
-            Spacer()
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(.horizontal, Spacing.xl)
     }
 }
 
@@ -311,48 +331,53 @@ private struct GetStartedPage: View {
     @Binding var showError: Bool
     
     var body: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            // Apple logo
-            Image(systemName: "apple.logo")
-                .font(.system(size: 60))
-                .foregroundStyle(.primary)
-            
-            VStack(spacing: Spacing.md) {
-                Text("Get Started")
-                    .font(.title)
-                    .fontWeight(.bold)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    Spacer(minLength: Spacing.lg)
                 
-                Text("Sign in with Apple to sync your data across devices and keep your measurements secure.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                // Apple logo
+                Image(systemName: "apple.logo")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.primary)
+                
+                VStack(spacing: Spacing.md) {
+                    Text("Get Started")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("Sign in with Apple to sync your data across devices and keep your measurements secure.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                
+                // Sign in with Apple button
+                SignInWithAppleButtonRepresentable(
+                    type: .signIn,
+                    style: .black
+                ) { result in
+                    handleSignInResult(result)
+                }
+                .frame(height: 50)
+                .frame(maxWidth: 320)
+                .cornerRadius(25)
+                .padding(.top, Spacing.lg)
+                
+                // Privacy note
+                Text("We only use your Apple ID to sync data. Your measurements are never shared.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
+                    .padding(.top, Spacing.sm)
+                
+                Spacer(minLength: Spacing.lg)
             }
-            
-            // Sign in with Apple button
-            SignInWithAppleButtonRepresentable(
-                type: .signIn,
-                style: .black
-            ) { result in
-                handleSignInResult(result)
-            }
-            .frame(height: 50)
-            .cornerRadius(25)
+            .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             .padding(.horizontal, Spacing.xl)
-            .padding(.top, Spacing.lg)
-            
-            // Privacy note
-            Text("We only use your Apple ID to sync data. Your measurements are never shared.")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .padding(.top, Spacing.sm)
-            
-            Spacer()
-            Spacer()
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(.horizontal, Spacing.xl)
     }
     
     private func handleSignInResult(_ result: Result<ASAuthorization, Error>) {

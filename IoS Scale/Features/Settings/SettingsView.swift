@@ -306,7 +306,7 @@ struct SettingsView: View {
                 }
             }
             
-            // Sign in with Apple section
+            // Sign in with Apple section / Sign Out
             if let userName = authService.currentUserName {
                 HStack {
                     Label {
@@ -339,15 +339,26 @@ struct SettingsView: View {
                     }
                     .foregroundStyle(.red)
                 }
+            } else {
+                // User is not signed in with Apple - show sign out option anyway
+                Button(role: .destructive) {
+                    showSignOutConfirmation = true
+                } label: {
+                    Label {
+                        Text("Sign Out")
+                    } icon: {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                    }
+                }
             }
             
         } header: {
             Label("Security", systemImage: "lock.shield")
         } footer: {
             if authService.isBiometricAvailable {
-                Text("Require \(authService.biometricName) to access the app. Sign in with Apple to sync your data across devices.")
+                Text("Require \(authService.biometricName) to access the app.")
             } else {
-                Text("Sign in with Apple to sync your data across devices.")
+                Text("Sign out to return to the welcome screen.")
             }
         }
     }

@@ -42,6 +42,8 @@ extension Measurement {
         case otherScale = "other_scale"
         case selfInSet = "self_in_set"
         case otherInSet = "other_in_set"
+        case selfPosition = "self_position"
+        case otherPosition = "other_position"
     }
     
     /// Convenience accessor for self scale (Advanced IOS)
@@ -52,6 +54,16 @@ extension Measurement {
     /// Convenience accessor for other scale (Advanced IOS)
     var otherScale: Double? {
         secondaryValues?[SecondaryKey.otherScale.rawValue]
+    }
+    
+    /// Convenience accessor for self position (Proximity)
+    var selfPosition: Double? {
+        secondaryValues?[SecondaryKey.selfPosition.rawValue]
+    }
+    
+    /// Convenience accessor for other position (Proximity)
+    var otherPosition: Double? {
+        secondaryValues?[SecondaryKey.otherPosition.rawValue]
     }
 }
 

@@ -36,12 +36,14 @@ struct OverlapView: View {
                             Text("How much do we share?")
                                 .font(Typography.title3)
                                 .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
                             
-                            Text("Drag vertically to adjust overlap")
+                            Text("Drag circles or use the slider")
                                 .font(Typography.caption)
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
                         
                         // Interactive circles with overlap highlight
                         OverlapCirclesView(
@@ -103,44 +105,65 @@ struct OverlapView: View {
                             }
                             
                             // Action buttons
-                            HStack(spacing: Spacing.sm) {
+                            VStack(spacing: Spacing.sm) {
                                 // Save button
                                 Button {
                                     viewModel.saveMeasurement()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Save")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.md)
+                                    .background(ColorPalette.primaryButtonGradient)
+                                    .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                                 }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.md)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
-                            }
-                            .accessibilityLabel("Save measurement")
-                            .accessibilityHint("Saves the current overlap as a measurement")
-                            
-                            // Exit button
-                            Button {
-                                viewModel.requestExit()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                                    Text("Exit")
+                                .accessibilityLabel("Save measurement")
+                                .accessibilityHint("Saves the current overlap as a measurement")
+                                
+                                // Reset and Exit row
+                                HStack(spacing: Spacing.sm) {
+                                    // Reset button
+                                    Button {
+                                        viewModel.resetToInitial()
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "arrow.counterclockwise")
+                                            Text("Reset")
+                                        }
+                                        .font(Typography.headline)
+                                        .foregroundStyle(.primary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, Spacing.md)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                    }
+                                    .accessibilityLabel("Reset to initial state")
+                                    .accessibilityHint("Resets circles to their initial position")
+                                    
+                                    // Exit button
+                                    Button {
+                                        viewModel.requestExit()
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                            Text("Exit")
+                                        }
+                                        .font(Typography.headline)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, Spacing.md)
+                                        .background(Color.secondary.opacity(0.1))
+                                        .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                    }
+                                    .accessibilityLabel("Exit session")
+                                    .accessibilityHint("Shows options to save and exit or discard session")
                                 }
-                                .font(Typography.headline)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.md)
-                                .background(Color.secondary.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                             }
-                            .accessibilityLabel("Exit session")
-                            .accessibilityHint("Shows options to save and exit or discard session")
-                        }
-                        .padding(.horizontal, Spacing.lg)
+                            .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
                 } // End VStack

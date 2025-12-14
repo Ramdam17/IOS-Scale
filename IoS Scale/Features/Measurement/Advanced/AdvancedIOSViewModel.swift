@@ -55,6 +55,11 @@ final class AdvancedIOSViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial values when measurement started (for Reset button)
+    private var initialOverlapValue: Double = 0.5
+    private var initialSelfScale: Double = 1.0
+    private var initialOtherScale: Double = 1.0
+    
     // MARK: - Initialization
     
     init() {
@@ -157,11 +162,12 @@ final class AdvancedIOSViewModel: ObservableObject {
         shouldDismiss = true
     }
     
-    /// Reset scales to default
-    func resetScales() {
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            selfScale = LayoutConstants.defaultCircleScale
-            otherScale = LayoutConstants.defaultCircleScale
+            overlapValue = initialOverlapValue
+            selfScale = initialSelfScale
+            otherScale = initialOtherScale
         }
         HapticManager.shared.selection()
     }
@@ -203,6 +209,11 @@ final class AdvancedIOSViewModel: ObservableObject {
             selfScale = Double.random(in: 0.7...1.3)
             otherScale = Double.random(in: 0.7...1.3)
         }
+        
+        // Store initial values for Reset button
+        initialOverlapValue = overlapValue
+        initialSelfScale = selfScale
+        initialOtherScale = otherScale
     }
     
     private func saveCurrentPosition() {

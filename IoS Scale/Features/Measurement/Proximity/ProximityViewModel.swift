@@ -28,6 +28,12 @@ final class ProximityViewModel: ObservableObject {
     /// Proximity value: 0 = far apart, 1 = touching
     @Published var proximityValue: Double = 0.0
     
+    /// Normalized position of the Self circle (0 = left edge, 1 = right edge)
+    @Published var selfPositionNormalized: Double = 0.25
+    
+    /// Normalized position of the Other circle (0 = left edge, 1 = right edge)
+    @Published var otherPositionNormalized: Double = 0.75
+    
     /// Whether the user is currently dragging
     @Published var isDragging: Bool = false
     
@@ -47,6 +53,9 @@ final class ProximityViewModel: ObservableObject {
     
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
+    
+    /// Initial proximity value when measurement started (for Reset button)
+    private var initialProximityValue: Double = 0.0
     
     // MARK: - Computed Properties
     
@@ -108,9 +117,15 @@ final class ProximityViewModel: ObservableObject {
     func saveMeasurement() {
         guard let session = currentSession else { return }
         
+        // Include circle positions as secondary values for scientific analysis
+        let secondaryValues: [String: Double] = [
+            Measurement.SecondaryKey.selfPosition.rawValue: selfPositionNormalized,
+            Measurement.SecondaryKey.otherPosition.rawValue: otherPositionNormalized
+        ]
+        
         let measurement = MeasurementModel(
             primaryValue: proximityValue,
-            secondaryValues: nil
+            secondaryValues: secondaryValues
         )
         
         session.measurements.append(measurement)
@@ -177,6 +192,17 @@ final class ProximityViewModel: ObservableObject {
         case .randomPosition:
             proximityValue = Double.random(in: 0.0...0.8)
         }
+        
+        // Store initial value for Reset button
+        initialProximityValue = proximityValue
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            proximityValue = initialProximityValue
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

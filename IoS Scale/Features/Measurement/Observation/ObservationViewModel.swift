@@ -48,6 +48,9 @@ final class ObservationViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial participation value when measurement started (for Reset button)
+    private var initialParticipationValue: Double = 0.0
+    
     // MARK: - Computed Properties
     
     /// Label describing the current observation state
@@ -175,6 +178,17 @@ final class ObservationViewModel: ObservableObject {
         case .randomPosition:
             participationValue = Double.random(in: 0.0...0.8)
         }
+        
+        // Store initial value for Reset button
+        initialParticipationValue = participationValue
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            participationValue = initialParticipationValue
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

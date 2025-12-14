@@ -17,6 +17,12 @@ struct ProximityCirclesView: View {
     /// Proximity value: 0 = far apart, 1 = touching
     @Binding var proximityValue: Double
     
+    /// Normalized self position: 0 = left edge, 1 = right edge
+    @Binding var selfPositionNormalized: Double
+    
+    /// Normalized other position: 0 = left edge, 1 = right edge
+    @Binding var otherPositionNormalized: Double
+    
     /// Callback when dragging starts or ends
     var onDraggingChanged: ((Bool) -> Void)?
     
@@ -42,8 +48,6 @@ struct ProximityCirclesView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            let centerY = geometry.size.height / 2
-            
             ZStack {
                 // Connecting line
                 connectingLine(geometry: geometry)
@@ -339,13 +343,35 @@ struct ProximityCirclesView: View {
     private func initializePositions(geometry: GeometryProxy) {
         selfPosition = calculateInitialSelfPosition(geometry: geometry)
         otherPosition = calculateInitialOtherPosition(geometry: geometry)
+        updateNormalizedPositions(geometry: geometry)
     }
     
     private func updatePositionsFromProximity(geometry: GeometryProxy) {
         // Update circle positions based on the current proximityValue
         // This is called when the slider changes the value externally
-        selfPosition = calculateInitialSelfPosition(geometry: geometry)
-        otherPosition = calculateInitialOtherPosition(geometry: geometry)
+        // ADAPTIVE: Keep current center point, adjust distance based on available space
+        
+        let centerY = geometry.size.height / 2
+        
+        // Calculate current center point between circles
+        let currentCenterX = (selfPosition.x + otherPosition.x) / 2
+        
+        // Calculate max distance from center to each side
+        let minSelfX = circleSize / 2 + 10
+        let maxOtherX = geometry.size.width - circleSize / 2 - 10
+        let spaceLeft = currentCenterX - minSelfX
+        let spaceRight = maxOtherX - currentCenterX
+        let maxHalfDistance = max(circleSize / 2, min(spaceLeft, spaceRight))
+        
+        // Calculate half distance based on proximity
+        // When proximityValue = 0: circles are maxHalfDistance apart from center (far apart)
+        // When proximityValue = 1: circles are circleSize/2 from center (touching)
+        let halfDistance = maxHalfDistance * (1 - proximityValue) + (circleSize / 2) * proximityValue
+        
+        selfPosition = CGPoint(x: currentCenterX - halfDistance, y: centerY)
+        otherPosition = CGPoint(x: currentCenterX + halfDistance, y: centerY)
+        
+        updateNormalizedPositions(geometry: geometry)
     }
     
     private func updateProximityValue(geometry: GeometryProxy) {
@@ -369,6 +395,21 @@ struct ProximityCirclesView: View {
         }
         
         proximityValue = clampedProximity
+        
+        // Update normalized positions
+        updateNormalizedPositions(geometry: geometry)
+    }
+    
+    private func updateNormalizedPositions(geometry: GeometryProxy) {
+        // Calculate normalized positions (0 = left edge, 1 = right edge)
+        let minX = circleSize / 2 + 10
+        let maxX = geometry.size.width - circleSize / 2 - 10
+        let range = maxX - minX
+        
+        if range > 0 {
+            selfPositionNormalized = (selfPosition.x - minX) / range
+            otherPositionNormalized = (otherPosition.x - minX) / range
+        }
     }
 }
 
@@ -377,17 +418,25 @@ struct ProximityCirclesView: View {
 #Preview("Proximity Circles") {
     struct PreviewWrapper: View {
         @State private var proximity: Double = 0.3
+        @State private var selfPos: Double = 0.25
+        @State private var otherPos: Double = 0.75
         
         var body: some View {
             VStack {
                 ProximityCirclesView(
                     proximityValue: $proximity,
+                    selfPositionNormalized: $selfPos,
+                    otherPositionNormalized: $otherPos,
                     onDraggingChanged: { _ in }
                 )
                 .frame(height: 300)
                 
                 Text("Proximity: \(Int(proximity * 100))%")
                     .font(Typography.headline)
+                
+                Text("Self: \(Int(selfPos * 100))% | Other: \(Int(otherPos * 100))%")
+                    .font(Typography.caption)
+                    .foregroundStyle(.secondary)
                 
                 Slider(value: $proximity, in: 0...1)
                     .padding(.horizontal)
@@ -403,10 +452,14 @@ struct ProximityCirclesView: View {
 #Preview("Proximity - Close") {
     struct PreviewWrapper: View {
         @State private var proximity: Double = 0.9
+        @State private var selfPos: Double = 0.4
+        @State private var otherPos: Double = 0.6
         
         var body: some View {
             ProximityCirclesView(
                 proximityValue: $proximity,
+                selfPositionNormalized: $selfPos,
+                otherPositionNormalized: $otherPos,
                 onDraggingChanged: { _ in }
             )
             .frame(height: 300)

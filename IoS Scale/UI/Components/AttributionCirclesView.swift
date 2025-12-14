@@ -24,6 +24,7 @@ struct AttributionCirclesView: View {
     @State private var isDragging = false
     @State private var hasInitialized = false
     @State private var lastHapticValue: Double = 0
+    @State private var initialSimilarityValue: Double = 0
     
     // Layout constants
     private var circleSize: CGFloat {
@@ -39,9 +40,6 @@ struct AttributionCirclesView: View {
             let otherCenter = otherPosition(geometry: geometry)
             
             ZStack {
-                // Similarity axis background
-                similarityAxis(geometry: geometry, centerY: centerY)
-                
                 // Connection line between circles
                 connectionLine(from: selfCenter, to: otherCenter)
                 
@@ -91,45 +89,6 @@ struct AttributionCirclesView: View {
         let separation = maxSeparation * (1 - similarityValue)
         
         return CGPoint(x: centerX + separation, y: centerY)
-    }
-    
-    // MARK: - Similarity Axis
-    
-    private func similarityAxis(geometry: GeometryProxy, centerY: CGFloat) -> some View {
-        let axisWidth = geometry.size.width * 0.8
-        
-        return ZStack {
-            // Axis line
-            RoundedRectangle(cornerRadius: 4)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.red.opacity(0.3),
-                            Color.yellow.opacity(0.3),
-                            Color.green.opacity(0.3)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(width: axisWidth, height: 8)
-                .position(x: geometry.size.width / 2, y: centerY + circleSize / 2 + 30)
-            
-            // Axis labels
-            HStack {
-                Text("Different")
-                    .font(Typography.caption2)
-                    .foregroundStyle(.secondary)
-                
-                Spacer()
-                
-                Text("Similar")
-                    .font(Typography.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(width: axisWidth)
-            .position(x: geometry.size.width / 2, y: centerY + circleSize / 2 + 50)
-        }
     }
     
     // MARK: - Connection Line
@@ -281,14 +240,15 @@ struct AttributionCirclesView: View {
             .onChanged { value in
                 if !isDragging {
                     isDragging = true
+                    initialSimilarityValue = similarityValue
                     onDraggingChanged?(true)
                     HapticManager.shared.lightImpact()
                 }
                 
                 // Horizontal drag: right = more similar (circles converge), left = more different
-                let dragSensitivity: CGFloat = 250
-                let delta = value.translation.width / dragSensitivity
-                let adjustedValue = similarityValue + delta * 0.1
+                let dragRange: CGFloat = 300
+                let normalizedDelta = value.translation.width / dragRange
+                let adjustedValue = initialSimilarityValue + normalizedDelta
                 
                 // Haptic feedback at thresholds
                 if abs(adjustedValue - lastHapticValue) >= hapticThreshold {
@@ -301,7 +261,7 @@ struct AttributionCirclesView: View {
                     HapticManager.shared.success()
                 }
                 
-                withAnimation(.interactiveSpring(response: 0.15)) {
+                withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.8)) {
                     similarityValue = min(max(0, adjustedValue), 1)
                 }
             }

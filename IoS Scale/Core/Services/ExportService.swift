@@ -74,10 +74,17 @@ final class ExportService {
         let separator = format.separator
         var lines: [String] = []
         
-        // Header row
+        // Header row - includes all possible secondary value columns
         var headers = ["session_id", "modality", "measurement_id", "timestamp", "primary_value"]
         if includeMetadata {
-            headers.append(contentsOf: ["self_scale", "other_scale", "session_created", "session_notes"])
+            headers.append(contentsOf: [
+                "self_scale",      // Advanced IOS
+                "other_scale",     // Advanced IOS
+                "self_in_set",     // Set Membership
+                "other_in_set",    // Set Membership
+                "session_created",
+                "session_notes"
+            ])
         }
         lines.append(headers.joined(separator: separator))
         
@@ -95,12 +102,19 @@ final class ExportService {
                 ]
                 
                 if includeMetadata {
+                    // Advanced IOS secondary values
                     let selfScale = measurement.secondaryValues?[Measurement.SecondaryKey.selfScale.rawValue]
                     let otherScale = measurement.secondaryValues?[Measurement.SecondaryKey.otherScale.rawValue]
+                    
+                    // Set Membership secondary values
+                    let selfInSet = measurement.secondaryValues?["selfInSet"]
+                    let otherInSet = measurement.secondaryValues?["otherInSet"]
                     
                     row.append(contentsOf: [
                         selfScale.map { formatNumber($0) } ?? "",
                         otherScale.map { formatNumber($0) } ?? "",
+                        selfInSet.map { formatNumber($0) } ?? "",
+                        otherInSet.map { formatNumber($0) } ?? "",
                         dateFormatter.string(from: session.createdAt),
                         escapeForDelimited(session.notes ?? "", separator: separator)
                     ])

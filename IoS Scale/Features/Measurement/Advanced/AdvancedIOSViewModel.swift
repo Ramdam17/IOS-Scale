@@ -12,6 +12,17 @@ import Combine
 /// ViewModel managing state for Advanced IOS measurements
 @MainActor
 final class AdvancedIOSViewModel: ObservableObject {
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_advanced_ios") private var lastPosition: Double = 0.5
+    @AppStorage("last_self_scale_advanced_ios") private var lastSelfScale: Double = 1.0
+    @AppStorage("last_other_scale_advanced_ios") private var lastOtherScale: Double = 1.0
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Current overlap value (0 = distant, 1 = merged)
@@ -108,6 +119,9 @@ final class AdvancedIOSViewModel: ObservableObject {
                 showSaveConfirmation = false
             }
             
+            // Save current position before applying reset behavior
+            saveCurrentPosition()
+            
             // Apply reset behavior for next measurement
             applyResetBehavior()
         } catch {
@@ -172,11 +186,12 @@ final class AdvancedIOSViewModel: ObservableObject {
     }
     
     private func applyResetBehavior() {
-        let settings = AppSettings.load()
-        
-        switch settings.resetBehavior {
+        switch resetBehavior {
         case .keepPosition:
-            break
+            // Restore last saved position and scales
+            overlapValue = lastPosition
+            selfScale = lastSelfScale
+            otherScale = lastOtherScale
             
         case .resetToDefault:
             overlapValue = 0.5
@@ -188,6 +203,12 @@ final class AdvancedIOSViewModel: ObservableObject {
             selfScale = Double.random(in: 0.7...1.3)
             otherScale = Double.random(in: 0.7...1.3)
         }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = overlapValue
+        lastSelfScale = selfScale
+        lastOtherScale = otherScale
     }
 }
 

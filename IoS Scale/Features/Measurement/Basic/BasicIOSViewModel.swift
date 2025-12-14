@@ -12,6 +12,15 @@ import Combine
 /// ViewModel managing state for Basic IOS measurements
 @MainActor
 final class BasicIOSViewModel: ObservableObject {
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_basic_ios") private var lastPosition: Double = 0.5
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Current overlap value (0 = distant, 1 = merged)
@@ -114,6 +123,9 @@ final class BasicIOSViewModel: ObservableObject {
             showSaveConfirmation = true
             HapticManager.shared.success()
             
+            // Save current position before applying reset behavior
+            saveCurrentPosition()
+            
             // Apply reset behavior for next measurement
             applyResetBehavior()
             
@@ -148,12 +160,10 @@ final class BasicIOSViewModel: ObservableObject {
     }
     
     private func applyResetBehavior() {
-        let settings = AppSettings.load()
-        
-        switch settings.resetBehavior {
+        switch resetBehavior {
         case .keepPosition:
-            // Keep current value (already set to 0.5 as default)
-            break
+            // Restore last saved position
+            overlapValue = lastPosition
             
         case .resetToDefault:
             overlapValue = 0.5
@@ -161,6 +171,10 @@ final class BasicIOSViewModel: ObservableObject {
         case .randomPosition:
             overlapValue = Double.random(in: 0.2...0.8)
         }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = overlapValue
     }
 }
 

@@ -14,6 +14,15 @@ import Combine
 @MainActor
 final class ProjectionViewModel: ObservableObject {
     
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_projection") private var lastPosition: Double = 0.0
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Projection value: 0 = separate, 1 = fully projected onto Other
@@ -114,6 +123,12 @@ final class ProjectionViewModel: ObservableObject {
         showSaveConfirmation = true
         HapticManager.shared.success()
         
+        // Save current position before applying reset behavior
+        saveCurrentPosition()
+        
+        // Apply reset behavior for next measurement
+        applyResetBehavior()
+        
         // Hide confirmation after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.showSaveConfirmation = false
@@ -144,5 +159,25 @@ final class ProjectionViewModel: ObservableObject {
         case .cancel:
             break
         }
+    }
+    
+    // MARK: - Reset Behavior
+    
+    private func applyResetBehavior() {
+        switch resetBehavior {
+        case .keepPosition:
+            // Restore last saved position
+            projectionValue = lastPosition
+            
+        case .resetToDefault:
+            projectionValue = 0.0
+            
+        case .randomPosition:
+            projectionValue = Double.random(in: 0.0...0.8)
+        }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = projectionValue
     }
 }

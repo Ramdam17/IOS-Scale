@@ -14,6 +14,15 @@ import Combine
 @MainActor
 final class IdentificationViewModel: ObservableObject {
     
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_identification") private var lastPosition: Double = 0.0
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Identification value: 0 = separate identities, 1 = fully identified with Other
@@ -114,6 +123,12 @@ final class IdentificationViewModel: ObservableObject {
         showSaveConfirmation = true
         HapticManager.shared.success()
         
+        // Save current position before applying reset behavior
+        saveCurrentPosition()
+        
+        // Apply reset behavior for next measurement
+        applyResetBehavior()
+        
         // Hide confirmation after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.showSaveConfirmation = false
@@ -144,5 +159,25 @@ final class IdentificationViewModel: ObservableObject {
         case .cancel:
             break
         }
+    }
+    
+    // MARK: - Reset Behavior
+    
+    private func applyResetBehavior() {
+        switch resetBehavior {
+        case .keepPosition:
+            // Restore last saved position
+            identificationValue = lastPosition
+            
+        case .resetToDefault:
+            identificationValue = 0.0
+            
+        case .randomPosition:
+            identificationValue = Double.random(in: 0.0...0.8)
+        }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = identificationValue
     }
 }

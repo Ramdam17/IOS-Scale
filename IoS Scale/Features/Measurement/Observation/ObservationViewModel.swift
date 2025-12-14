@@ -14,6 +14,15 @@ import Combine
 @MainActor
 final class ObservationViewModel: ObservableObject {
     
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_observation") private var lastPosition: Double = 0.0
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Observation value: 0 = pure observer (outside), 1 = full participant (immersed)
@@ -114,6 +123,12 @@ final class ObservationViewModel: ObservableObject {
         showSaveConfirmation = true
         HapticManager.shared.success()
         
+        // Save current position before applying reset behavior
+        saveCurrentPosition()
+        
+        // Apply reset behavior for next measurement
+        applyResetBehavior()
+        
         // Hide confirmation after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.showSaveConfirmation = false
@@ -144,5 +159,25 @@ final class ObservationViewModel: ObservableObject {
         case .cancel:
             break
         }
+    }
+    
+    // MARK: - Reset Behavior
+    
+    private func applyResetBehavior() {
+        switch resetBehavior {
+        case .keepPosition:
+            // Restore last saved position
+            participationValue = lastPosition
+            
+        case .resetToDefault:
+            participationValue = 0.0
+            
+        case .randomPosition:
+            participationValue = Double.random(in: 0.0...0.8)
+        }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = participationValue
     }
 }

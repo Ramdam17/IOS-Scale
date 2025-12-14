@@ -13,6 +13,16 @@ import Combine
 /// ViewModel managing state for Set Membership measurements
 @MainActor
 final class SetMembershipViewModel: ObservableObject {
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_self_in_set") private var lastSelfInSet: Bool = true
+    @AppStorage("last_other_in_set") private var lastOtherInSet: Bool = false
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Whether Self is inside the set
@@ -38,19 +48,21 @@ final class SetMembershipViewModel: ObservableObject {
     
     // MARK: - Computed Properties
     
-    /// Primary value representing shared membership degree (0-1)
-    /// - 0.0: Neither in set
-    /// - 0.33: Only one in set
-    /// - 0.66: Other combination
-    /// - 1.0: Both in set
+    /// Primary value representing membership state (0-3)
+    /// - 0: Neither in set
+    /// - 1: Self only in set
+    /// - 2: Other only in set
+    /// - 3: Both in set
     var primaryValue: Double {
         switch (selfInSet, otherInSet) {
-        case (true, true):
-            return 1.0  // Full shared membership
-        case (true, false), (false, true):
-            return 0.5  // Partial - only one in set
         case (false, false):
-            return 0.0  // No shared membership
+            return 0.0  // Neither in set
+        case (true, false):
+            return 1.0  // Self only
+        case (false, true):
+            return 2.0  // Other only
+        case (true, true):
+            return 3.0  // Both in set
         }
     }
     
@@ -146,6 +158,9 @@ final class SetMembershipViewModel: ObservableObject {
             showSaveConfirmation = true
             HapticManager.shared.success()
             
+            // Save current position before applying reset behavior
+            saveCurrentPosition()
+            
             // Apply reset behavior for next measurement
             applyResetBehavior()
             
@@ -180,12 +195,11 @@ final class SetMembershipViewModel: ObservableObject {
     }
     
     private func applyResetBehavior() {
-        let settings = AppSettings.load()
-        
-        switch settings.resetBehavior {
+        switch resetBehavior {
         case .keepPosition:
-            // Keep current values
-            break
+            // Restore last saved state
+            selfInSet = lastSelfInSet
+            otherInSet = lastOtherInSet
             
         case .resetToDefault:
             selfInSet = true
@@ -195,6 +209,11 @@ final class SetMembershipViewModel: ObservableObject {
             selfInSet = Bool.random()
             otherInSet = Bool.random()
         }
+    }
+    
+    private func saveCurrentPosition() {
+        lastSelfInSet = selfInSet
+        lastOtherInSet = otherInSet
     }
 }
 

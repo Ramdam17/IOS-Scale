@@ -14,6 +14,15 @@ import Combine
 @MainActor
 final class ProximityViewModel: ObservableObject {
     
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_proximity") private var lastPosition: Double = 0.0
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Proximity value: 0 = far apart, 1 = touching
@@ -114,6 +123,12 @@ final class ProximityViewModel: ObservableObject {
         showSaveConfirmation = true
         HapticManager.shared.success()
         
+        // Save current position before applying reset behavior
+        saveCurrentPosition()
+        
+        // Apply reset behavior for next measurement
+        applyResetBehavior()
+        
         // Hide confirmation after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.showSaveConfirmation = false
@@ -146,5 +161,25 @@ final class ProximityViewModel: ObservableObject {
         case .cancel:
             break
         }
+    }
+    
+    // MARK: - Reset Behavior
+    
+    private func applyResetBehavior() {
+        switch resetBehavior {
+        case .keepPosition:
+            // Restore last saved position
+            proximityValue = lastPosition
+            
+        case .resetToDefault:
+            proximityValue = 0.0
+            
+        case .randomPosition:
+            proximityValue = Double.random(in: 0.0...0.8)
+        }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = proximityValue
     }
 }

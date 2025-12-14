@@ -14,6 +14,15 @@ import Combine
 @MainActor
 final class AttributionViewModel: ObservableObject {
     
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_attribution") private var lastPosition: Double = 0.5
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Attribution/similarity value: 0 = very different, 1 = very similar
@@ -114,6 +123,12 @@ final class AttributionViewModel: ObservableObject {
         showSaveConfirmation = true
         HapticManager.shared.success()
         
+        // Save current position before applying reset behavior
+        saveCurrentPosition()
+        
+        // Apply reset behavior for next measurement
+        applyResetBehavior()
+        
         // Hide confirmation after delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.showSaveConfirmation = false
@@ -144,5 +159,25 @@ final class AttributionViewModel: ObservableObject {
         case .cancel:
             break
         }
+    }
+    
+    // MARK: - Reset Behavior
+    
+    private func applyResetBehavior() {
+        switch resetBehavior {
+        case .keepPosition:
+            // Restore last saved position
+            similarityValue = lastPosition
+            
+        case .resetToDefault:
+            similarityValue = 0.5
+            
+        case .randomPosition:
+            similarityValue = Double.random(in: 0.2...0.8)
+        }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = similarityValue
     }
 }

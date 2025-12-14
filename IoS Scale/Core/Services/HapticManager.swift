@@ -23,6 +23,11 @@ final class HapticManager {
     private let notificationGenerator = UINotificationFeedbackGenerator()
     #endif
     
+    /// Check if haptic feedback is enabled in settings
+    private var isHapticEnabled: Bool {
+        UserDefaults.standard.object(forKey: "hapticFeedbackEnabled") as? Bool ?? true
+    }
+    
     private init() {
         prepareGenerators()
     }
@@ -105,13 +110,6 @@ final class HapticManager {
         notificationGenerator.notificationOccurred(.error)
         notificationGenerator.prepare()
         #endif
-    }
-    
-    // MARK: - Settings
-    
-    /// Check if haptic feedback is enabled in settings
-    private var isHapticEnabled: Bool {
-        AppSettings.load().hapticFeedbackEnabled
     }
 }
 

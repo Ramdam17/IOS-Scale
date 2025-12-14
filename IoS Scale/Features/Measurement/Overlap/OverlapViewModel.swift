@@ -13,6 +13,15 @@ import Combine
 /// ViewModel managing state for Overlap measurements
 @MainActor
 final class OverlapViewModel: ObservableObject {
+    // MARK: - AppStorage Properties
+    
+    @AppStorage("reset_behavior") private var resetBehaviorRaw = ResetBehavior.resetToDefault.rawValue
+    @AppStorage("last_position_overlap") private var lastPosition: Double = 0.0
+    
+    private var resetBehavior: ResetBehavior {
+        ResetBehavior(rawValue: resetBehaviorRaw) ?? .resetToDefault
+    }
+    
     // MARK: - Published Properties
     
     /// Current overlap value (0 = no overlap, 1 = complete overlap)
@@ -115,6 +124,9 @@ final class OverlapViewModel: ObservableObject {
             showSaveConfirmation = true
             HapticManager.shared.success()
             
+            // Save current position before applying reset behavior
+            saveCurrentPosition()
+            
             // Apply reset behavior for next measurement
             applyResetBehavior()
             
@@ -149,12 +161,10 @@ final class OverlapViewModel: ObservableObject {
     }
     
     private func applyResetBehavior() {
-        let settings = AppSettings.load()
-        
-        switch settings.resetBehavior {
+        switch resetBehavior {
         case .keepPosition:
-            // Keep current value
-            break
+            // Restore last saved position
+            overlapValue = lastPosition
             
         case .resetToDefault:
             overlapValue = 0.0  // Start with no overlap
@@ -162,6 +172,10 @@ final class OverlapViewModel: ObservableObject {
         case .randomPosition:
             overlapValue = Double.random(in: 0.0...0.8)
         }
+    }
+    
+    private func saveCurrentPosition() {
+        lastPosition = overlapValue
     }
 }
 

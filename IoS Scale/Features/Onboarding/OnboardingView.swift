@@ -310,7 +310,7 @@ private struct CustomizePage: View {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     FeatureRow(icon: "paintbrush", text: "Light, Dark, or System theme")
                     FeatureRow(icon: "arrow.counterclockwise", text: "Reset behavior between measurements")
-                    FeatureRow(icon: "faceid", text: "Biometric authentication")
+                    FeatureRow(icon: "square.and.arrow.up", text: "Export data in CSV, TSV, or JSON")
                 }
                 .padding(.top, Spacing.md)
                 

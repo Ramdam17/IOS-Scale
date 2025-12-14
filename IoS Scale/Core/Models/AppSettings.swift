@@ -28,9 +28,6 @@ struct AppSettings: Codable {
     /// Whether iCloud sync is enabled
     var iCloudSyncEnabled: Bool = false
     
-    /// Whether biometric authentication is enabled
-    var biometricAuthEnabled: Bool = false
-    
     /// Whether haptic feedback is enabled
     var hapticFeedbackEnabled: Bool = true
 }

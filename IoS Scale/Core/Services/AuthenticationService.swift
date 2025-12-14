@@ -47,10 +47,6 @@ final class AuthenticationService: NSObject {
     // MARK: - Settings
     
     @ObservationIgnored
-    @AppStorage("biometricAuthEnabled") var biometricAuthEnabled = false
-    @ObservationIgnored
-    @AppStorage("lockOnBackground") var lockOnBackground = false
-    @ObservationIgnored
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @ObservationIgnored
     @AppStorage("appleUserID") private var storedAppleUserID: String?
@@ -301,19 +297,13 @@ final class AuthenticationService: NSObject {
     
     // MARK: - App Lifecycle
     
-    /// Lock the app (call when going to background if enabled)
+    /// Lock the app - disabled, kept for API compatibility
     func lockApp() {
-        // Only lock if already authenticated (not during onboarding)
-        if biometricAuthEnabled && lockOnBackground && state == .authenticated {
-            state = .locked
-        }
+        // Lock feature removed - do nothing
     }
     
-    /// Unlock the app using appropriate method
+    /// Unlock the app - always succeeds since lock feature is removed
     func unlockApp() async -> Bool {
-        if biometricAuthEnabled {
-            return await authenticateWithBiometrics()
-        }
         return true
     }
     
@@ -325,11 +315,8 @@ final class AuthenticationService: NSObject {
             return
         }
         
-        // If biometric auth is enabled, require authentication
-        if biometricAuthEnabled {
-            state = .locked
-        } else if storedAppleUserID != nil {
-            // Check Apple ID status if user was signed in
+        // Check Apple ID status if user was signed in
+        if storedAppleUserID != nil {
             await checkAppleSignInStatus()
         } else {
             // User completed onboarding but somehow signed out - show onboarding again

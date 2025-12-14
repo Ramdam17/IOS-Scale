@@ -13,17 +13,24 @@ import SwiftData
 struct AttributionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     @StateObject private var viewModel = AttributionViewModel()
     
     var body: some View {
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
+            let isPad = horizontalSizeClass == .regular
             let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.40
             
             ZStack {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // iPad top spacing for vertical centering
+                        if isPad {
+                            Spacer(minLength: geometry.size.height * 0.05)
+                        }
+                        
                         // Question header
                         VStack(spacing: Spacing.xs) {
                             Text("How similar do I perceive myself to the other?")

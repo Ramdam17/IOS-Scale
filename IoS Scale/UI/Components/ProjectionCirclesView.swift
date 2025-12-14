@@ -71,8 +71,8 @@ struct ProjectionCirclesView: View {
     private func selfPosition(geometry: GeometryProxy) -> CGPoint {
         // Self moves from left toward Other based on projectionValue
         let centerY = geometry.size.height * 0.4
-        let startX = geometry.size.width * 0.35 // Starting position (left)
-        let otherX = geometry.size.width * 0.65
+        let startX = geometry.size.width * 0.25 // Starting position (left) - more range
+        let otherX = geometry.size.width * 0.75
         
         // At value=1, Self is at same position as Other (fully projected)
         let currentX = startX + (otherX - startX) * projectionValue
@@ -83,7 +83,7 @@ struct ProjectionCirclesView: View {
     private func otherPosition(geometry: GeometryProxy) -> CGPoint {
         // Other stays on the right, stationary
         let centerY = geometry.size.height * 0.4
-        let x = geometry.size.width * 0.65
+        let x = geometry.size.width * 0.75  // Moved right for more range
         return CGPoint(x: x, y: centerY)
     }
     
@@ -92,34 +92,42 @@ struct ProjectionCirclesView: View {
     private func directionArrow(from: CGPoint, to: CGPoint, geometry: GeometryProxy) -> some View {
         let arrowOpacity = max(0, 1 - projectionValue * 1.5) // Fades as projection increases
         
+        // Calculate arrow position based on actual circle positions
+        let gap = to.x - from.x - circleSize  // Space between circles
+        let arrowLength = min(gap * 0.6, 60)  // Arrow is 60% of gap, max 60pt
+        let centerX = (from.x + to.x) / 2     // Center point between circles
+        let centerY = from.y
+        
         return ZStack {
-            // Arrow line
-            Path { path in
-                let startX = geometry.size.width * 0.35 + circleSize / 2 + 10
-                let endX = to.x - circleSize / 2 - 20
-                let y = geometry.size.height * 0.4
-                path.move(to: CGPoint(x: startX, y: y))
-                path.addLine(to: CGPoint(x: endX, y: y))
-            }
-            .stroke(
-                LinearGradient(
-                    colors: [
-                        ColorPalette.selfCircleCore.opacity(0.6),
-                        ColorPalette.otherCircleCore.opacity(0.6)
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ),
-                style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [8, 6])
-            )
-            .opacity(arrowOpacity)
-            
-            // Arrow head pointing to Other
-            Image(systemName: "chevron.right")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(ColorPalette.otherCircleCore.opacity(0.7))
-                .position(x: to.x - circleSize / 2 - 30, y: to.y)
+            // Only show arrow if there's enough space
+            if gap > circleSize * 0.5 {
+                // Arrow line (short, centered)
+                Path { path in
+                    let startX = centerX - arrowLength / 2
+                    let endX = centerX + arrowLength / 2
+                    path.move(to: CGPoint(x: startX, y: centerY))
+                    path.addLine(to: CGPoint(x: endX, y: centerY))
+                }
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            ColorPalette.selfCircleCore.opacity(0.6),
+                            ColorPalette.otherCircleCore.opacity(0.6)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [8, 6])
+                )
                 .opacity(arrowOpacity)
+                
+                // Arrow head pointing to Other (right)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(ColorPalette.otherCircleCore.opacity(0.7))
+                    .position(x: centerX + arrowLength / 2 + 10, y: centerY)
+                    .opacity(arrowOpacity)
+            }
         }
     }
     
@@ -238,7 +246,7 @@ struct ProjectionCirclesView: View {
     // MARK: - Labels
     
     private func circleLabels(selfCenter: CGPoint, otherCenter: CGPoint, geometry: GeometryProxy) -> some View {
-        let selfLabelX = geometry.size.width * 0.35 // Fixed position for Self label
+        let selfLabelX = geometry.size.width * 0.25 // Fixed position for Self label (matches new position)
         let centerY = geometry.size.height * 0.4
         
         return ZStack {
@@ -271,9 +279,10 @@ struct ProjectionCirclesView: View {
                 }
                 
                 // Horizontal drag: right = more projection (Self moves toward Other), left = less
-                let dragSensitivity: CGFloat = 250
+                // Improved sensitivity for better control
+                let dragSensitivity: CGFloat = 200
                 let delta = value.translation.width / dragSensitivity
-                let adjustedValue = projectionValue + delta * 0.1
+                let adjustedValue = projectionValue + delta * 0.15
                 
                 // Haptic feedback at thresholds
                 if abs(adjustedValue - lastHapticValue) >= hapticThreshold {

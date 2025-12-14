@@ -70,15 +70,15 @@ struct IdentificationCirclesView: View {
     private func selfPosition(geometry: GeometryProxy) -> CGPoint {
         // Self stays on the left, stationary
         let centerY = geometry.size.height * 0.4
-        let x = geometry.size.width * 0.35
+        let x = geometry.size.width * 0.25  // Moved left for more range
         return CGPoint(x: x, y: centerY)
     }
     
     private func otherPosition(geometry: GeometryProxy) -> CGPoint {
         // Other moves from right toward Self based on identificationValue
         let centerY = geometry.size.height * 0.4
-        let selfX = geometry.size.width * 0.35
-        let startX = geometry.size.width * 0.65 // Starting position (far right)
+        let selfX = geometry.size.width * 0.25
+        let startX = geometry.size.width * 0.75 // Starting position (far right) - more range
         
         // At value=1, Other is at same position as Self (fully absorbed)
         let currentX = startX - (startX - selfX) * identificationValue
@@ -91,33 +91,42 @@ struct IdentificationCirclesView: View {
     private func directionArrow(from: CGPoint, to: CGPoint, geometry: GeometryProxy) -> some View {
         let arrowOpacity = max(0, 1 - identificationValue * 1.5) // Fades as absorption increases
         
+        // Calculate arrow position based on actual circle positions
+        let gap = from.x - to.x - circleSize  // Space between circles
+        let arrowLength = min(gap * 0.6, 60)  // Arrow is 60% of gap, max 60pt
+        let centerX = (from.x + to.x) / 2     // Center point between circles
+        let centerY = from.y
+        
         return ZStack {
-            // Arrow line
-            Path { path in
-                let startX = from.x - circleSize / 2 - 10
-                let endX = to.x + circleSize / 2 + 20
-                path.move(to: CGPoint(x: startX, y: from.y))
-                path.addLine(to: CGPoint(x: endX, y: to.y))
-            }
-            .stroke(
-                LinearGradient(
-                    colors: [
-                        ColorPalette.otherCircleCore.opacity(0.6),
-                        ColorPalette.selfCircleCore.opacity(0.6)
-                    ],
-                    startPoint: .trailing,
-                    endPoint: .leading
-                ),
-                style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [8, 6])
-            )
-            .opacity(arrowOpacity)
-            
-            // Arrow head pointing to Self
-            Image(systemName: "chevron.left")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(ColorPalette.selfCircleCore.opacity(0.7))
-                .position(x: to.x + circleSize / 2 + 30, y: to.y)
+            // Only show arrow if there's enough space
+            if gap > circleSize * 0.5 {
+                // Arrow line (short, centered)
+                Path { path in
+                    let startX = centerX + arrowLength / 2
+                    let endX = centerX - arrowLength / 2
+                    path.move(to: CGPoint(x: startX, y: centerY))
+                    path.addLine(to: CGPoint(x: endX, y: centerY))
+                }
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            ColorPalette.otherCircleCore.opacity(0.6),
+                            ColorPalette.selfCircleCore.opacity(0.6)
+                        ],
+                        startPoint: .trailing,
+                        endPoint: .leading
+                    ),
+                    style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [8, 6])
+                )
                 .opacity(arrowOpacity)
+                
+                // Arrow head pointing to Self (left)
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(ColorPalette.selfCircleCore.opacity(0.7))
+                    .position(x: centerX - arrowLength / 2 - 10, y: centerY)
+                    .opacity(arrowOpacity)
+            }
         }
     }
     
@@ -266,9 +275,10 @@ struct IdentificationCirclesView: View {
                 }
                 
                 // Horizontal drag: left = more identification (Other moves toward Self), right = less
-                let dragSensitivity: CGFloat = 250
+                // Improved sensitivity for better control
+                let dragSensitivity: CGFloat = 200
                 let delta = -value.translation.width / dragSensitivity
-                let adjustedValue = identificationValue + delta * 0.1
+                let adjustedValue = identificationValue + delta * 0.15
                 
                 // Haptic feedback at thresholds
                 if abs(adjustedValue - lastHapticValue) >= hapticThreshold {

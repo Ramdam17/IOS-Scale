@@ -22,7 +22,7 @@ struct IOSScaleApp: App {
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
-            cloudKitDatabase: .none
+            cloudKitDatabase: .automatic
         )
         
         do {
@@ -55,10 +55,10 @@ struct IOSScaleApp: App {
             }
             
         case .active:
-            // Sync when becoming active (if enabled)
+            // Refresh sync status when becoming active (if enabled)
             Task { @MainActor in
                 if CloudSyncService.shared.iCloudSyncEnabled {
-                    await CloudSyncService.shared.sync()
+                    await CloudSyncService.shared.refreshStatus()
                 }
             }
             

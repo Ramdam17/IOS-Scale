@@ -189,7 +189,7 @@ struct SettingsView: View {
             .onChange(of: iCloudSyncEnabled) { _, newValue in
                 if newValue {
                     Task {
-                        await CloudSyncService.shared.sync()
+                        await CloudSyncService.shared.refreshStatus()
                     }
                 }
             }
@@ -208,14 +208,14 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 
-                // Manual sync button
+                // Manual refresh button
                 Button {
                     Task {
-                        await CloudSyncService.shared.sync()
+                        await CloudSyncService.shared.refreshStatus()
                     }
                 } label: {
                     Label {
-                        Text("Sync Now")
+                        Text("Refresh Status")
                     } icon: {
                         Image(systemName: "arrow.triangle.2.circlepath")
                     }

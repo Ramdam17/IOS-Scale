@@ -19,8 +19,6 @@ struct SettingsView: View {
     @AppStorage("exportFormat") private var exportFormat = ExportFormat.csv.rawValue
     @AppStorage("decimalSeparator") private var decimalSeparator = DecimalSeparator.point.rawValue
     @AppStorage("includeMetadataInExport") private var includeMetadataInExport = true
-    @AppStorage("biometricAuthEnabled") private var biometricAuthEnabled = false
-    @AppStorage("lockOnBackground") private var lockOnBackground = false
     
     @State private var showClearDataConfirmation = false
     @State private var showEmptyTrashConfirmation = false
@@ -259,53 +257,6 @@ struct SettingsView: View {
     
     private var securitySection: some View {
         Section {
-            // Biometric auth toggle
-            if authService.isBiometricAvailable {
-                Toggle(isOn: $biometricAuthEnabled) {
-                    Label {
-                        Text("\(authService.biometricName) Lock")
-                    } icon: {
-                        Image(systemName: authService.biometricIcon)
-                    }
-                }
-                .onChange(of: biometricAuthEnabled) { _, newValue in
-                    if newValue {
-                        // Verify biometric works before enabling
-                        Task {
-                            let success = await authService.authenticateWithBiometrics()
-                            if !success {
-                                biometricAuthEnabled = false
-                            } else {
-                                HapticManager.shared.success()
-                            }
-                        }
-                    }
-                }
-                
-                // Lock on background toggle (only if biometric enabled)
-                if biometricAuthEnabled {
-                    Toggle(isOn: $lockOnBackground) {
-                        Label {
-                            Text("Lock When Leaving App")
-                        } icon: {
-                            Image(systemName: "lock.rotation")
-                        }
-                    }
-                }
-            } else {
-                // No biometric available message
-                HStack {
-                    Label {
-                        Text("Biometric Authentication")
-                    } icon: {
-                        Image(systemName: "lock")
-                    }
-                    Spacer()
-                    Text("Not Available")
-                        .foregroundStyle(.secondary)
-                }
-            }
-            
             // Sign in with Apple section / Sign Out
             if let userName = authService.currentUserName {
                 HStack {
@@ -353,13 +304,9 @@ struct SettingsView: View {
             }
             
         } header: {
-            Label("Security", systemImage: "lock.shield")
+            Label("Account", systemImage: "person.circle")
         } footer: {
-            if authService.isBiometricAvailable {
-                Text("Require \(authService.biometricName) to access the app.")
-            } else {
-                Text("Sign out to return to the welcome screen.")
-            }
+            Text("Sign out to return to the welcome screen.")
         }
     }
     

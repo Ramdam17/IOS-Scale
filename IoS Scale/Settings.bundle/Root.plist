@@ -137,33 +137,6 @@
 		</dict>
 		
 		<!-- Security Group -->
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>Security</string>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Biometric Lock</string>
-			<key>Key</key>
-			<string>biometricAuthEnabled</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Lock When Leaving App</string>
-			<key>Key</key>
-			<string>lockOnBackground</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		
 		<!-- Data Group -->
 		<dict>
 			<key>Type</key>

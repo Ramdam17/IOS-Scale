@@ -2,13 +2,14 @@
 //  CloudSyncService.swift
 //  IoS Scale
 //
-//  iCloud sync service using CloudKit for cross-device synchronization.
+//  iCloud sync status service.
+//  Note: SwiftData handles all sync automatically with cloudKitDatabase: .automatic
+//  This service only provides status display and iCloud availability checking.
 //
 
 import Foundation
 import CloudKit
 import SwiftUI
-import Combine
 
 /// Sync status for UI display
 enum SyncStatus: Equatable {
@@ -67,7 +68,8 @@ enum SyncStatus: Equatable {
     }
 }
 
-/// CloudKit sync service for sessions and measurements
+/// CloudKit sync status service
+/// SwiftData handles actual sync automatically - this service only provides status display
 @MainActor @Observable
 final class CloudSyncService {
     
@@ -84,7 +86,7 @@ final class CloudSyncService {
     // MARK: - Settings
     
     @ObservationIgnored
-    @AppStorage("iCloudSyncEnabled") var iCloudSyncEnabled = false
+    @AppStorage("iCloudSyncEnabled") var iCloudSyncEnabled = true  // Default to enabled
     @ObservationIgnored
     @AppStorage("lastSyncTimestamp") private var lastSyncTimestamp: Double = 0
     
@@ -101,45 +103,22 @@ final class CloudSyncService {
         return _container!
     }
     
-    private var privateDatabase: CKDatabase {
-        container.privateCloudDatabase
-    }
-    
-    // MARK: - Record Types
-    
-    private enum RecordType {
-        static let session = "Session"
-        static let measurement = "Measurement"
-    }
-    
-    // MARK: - Record Keys
-    
-    private enum SessionKeys {
-        static let id = "id"
-        static let modality = "modality"
-        static let createdAt = "createdAt"
-        static let isDeleted = "isDeleted"
-        static let deletedAt = "deletedAt"
-    }
-    
-    private enum MeasurementKeys {
-        static let id = "id"
-        static let sessionID = "sessionID"
-        static let timestamp = "timestamp"
-        static let primaryValue = "primaryValue"
-        static let secondaryValues = "secondaryValues"
-    }
-    
     // MARK: - Initialization
     
     private init() {
         loadLastSyncDate()
         setupNotifications()
+        
+        // Check initial status
+        Task {
+            await refreshStatus()
+        }
     }
     
     // MARK: - Public Methods
     
-    /// Check if iCloud is available
+    /// Check if iCloud is available and update status
+    @discardableResult
     func checkiCloudStatus() async -> Bool {
         // Don't check if sync is disabled
         guard iCloudSyncEnabled else {
@@ -148,9 +127,10 @@ final class CloudSyncService {
         }
         
         do {
-            let status = try await container.accountStatus()
-            switch status {
+            let accountStatus = try await container.accountStatus()
+            switch accountStatus {
             case .available:
+                self.status = .idle
                 return true
             case .noAccount:
                 self.status = .error("No iCloud account")
@@ -174,31 +154,23 @@ final class CloudSyncService {
         }
     }
     
-    /// Perform full sync (upload + download)
-    func sync() async {
+    /// Refresh sync status (for pull-to-refresh or manual check)
+    func refreshStatus() async {
         guard iCloudSyncEnabled else {
             status = .disabled
-            return
-        }
-        
-        guard await checkiCloudStatus() else {
             return
         }
         
         isSyncing = true
         status = .syncing
         
-        do {
-            // Download changes from iCloud
-            try await downloadChanges()
-            
-            // Upload local changes
-            try await uploadChanges()
-            
-            // Update sync timestamp
+        let isAvailable = await checkiCloudStatus()
+        
+        if isAvailable {
+            // SwiftData handles sync automatically
+            // We just update the timestamp for display purposes
             lastSyncDate = Date()
             lastSyncTimestamp = Date().timeIntervalSince1970
-            
             status = .success
             
             // Reset to idle after a moment
@@ -206,103 +178,23 @@ final class CloudSyncService {
             if status == .success {
                 status = .idle
             }
-        } catch {
-            status = .error(error.localizedDescription)
         }
         
         isSyncing = false
     }
     
-    /// Upload a single session to iCloud
-    func uploadSession(_ session: SessionModel) async throws {
-        guard iCloudSyncEnabled else { return }
-        guard await checkiCloudStatus() else { return }
+    /// Toggle iCloud sync on/off
+    func toggleSync(_ enabled: Bool) async {
+        iCloudSyncEnabled = enabled
         
-        let record = createSessionRecord(from: session)
-        try await privateDatabase.save(record)
-        
-        // Upload measurements
-        for measurement in session.measurements {
-            let measurementRecord = createMeasurementRecord(from: measurement, sessionID: session.id)
-            try await privateDatabase.save(measurementRecord)
+        if enabled {
+            await refreshStatus()
+        } else {
+            status = .disabled
         }
-    }
-    
-    /// Delete a session from iCloud
-    func deleteSession(_ sessionID: UUID) async throws {
-        guard iCloudSyncEnabled else { return }
-        guard await checkiCloudStatus() else { return }
-        
-        let recordID = CKRecord.ID(recordName: sessionID.uuidString)
-        try await privateDatabase.deleteRecord(withID: recordID)
     }
     
     // MARK: - Private Methods
-    
-    /// Download changes from iCloud
-    private func downloadChanges() async throws {
-        // Query all sessions
-        let query = CKQuery(recordType: RecordType.session, predicate: NSPredicate(value: true))
-        query.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
-        
-        let results = try await privateDatabase.records(matching: query)
-        
-        for result in results.matchResults {
-            switch result.1 {
-            case .success(let record):
-                // Process session record
-                await processSessionRecord(record)
-            case .failure(let error):
-                print("Error fetching record: \(error)")
-            }
-        }
-    }
-    
-    /// Upload local changes to iCloud
-    private func uploadChanges() async throws {
-        // This would query SwiftData for sessions modified since last sync
-        // and upload them to CloudKit
-        // Implementation depends on SwiftData integration
-    }
-    
-    /// Process a downloaded session record
-    private func processSessionRecord(_ record: CKRecord) async {
-        // Convert CKRecord to SessionModel and save locally
-        // Implementation depends on SwiftData integration
-    }
-    
-    /// Create a CloudKit record from a session
-    private func createSessionRecord(from session: SessionModel) -> CKRecord {
-        let recordID = CKRecord.ID(recordName: session.id.uuidString)
-        let record = CKRecord(recordType: RecordType.session, recordID: recordID)
-        
-        record[SessionKeys.id] = session.id.uuidString
-        record[SessionKeys.modality] = session.modality.rawValue
-        record[SessionKeys.createdAt] = session.createdAt
-        record[SessionKeys.isDeleted] = session.isDeleted
-        record[SessionKeys.deletedAt] = session.deletedAt
-        
-        return record
-    }
-    
-    /// Create a CloudKit record from a measurement
-    private func createMeasurementRecord(from measurement: MeasurementModel, sessionID: UUID) -> CKRecord {
-        let recordID = CKRecord.ID(recordName: measurement.id.uuidString)
-        let record = CKRecord(recordType: RecordType.measurement, recordID: recordID)
-        
-        record[MeasurementKeys.id] = measurement.id.uuidString
-        record[MeasurementKeys.sessionID] = sessionID.uuidString
-        record[MeasurementKeys.timestamp] = measurement.timestamp
-        record[MeasurementKeys.primaryValue] = measurement.primaryValue
-        
-        if let secondaryValues = measurement.secondaryValues {
-            if let data = try? JSONEncoder().encode(secondaryValues) {
-                record[MeasurementKeys.secondaryValues] = data
-            }
-        }
-        
-        return record
-    }
     
     /// Load last sync date from storage
     private func loadLastSyncDate() {
@@ -319,7 +211,6 @@ final class CloudSyncService {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                // Only check if sync is enabled to avoid unnecessary container access
                 guard let self = self, self.iCloudSyncEnabled else { return }
                 await self.checkiCloudStatus()
             }
@@ -355,17 +246,17 @@ struct SyncStatusView: View {
 
 // MARK: - Sync Button
 
-/// A button to trigger manual sync
+/// A button to trigger manual status refresh
 struct SyncButton: View {
     @Environment(CloudSyncService.self) private var syncService
     
     var body: some View {
         Button {
             Task {
-                await syncService.sync()
+                await syncService.refreshStatus()
             }
         } label: {
-            Label("Sync Now", systemImage: "arrow.triangle.2.circlepath")
+            Label("Refresh Status", systemImage: "arrow.triangle.2.circlepath")
         }
         .disabled(syncService.isSyncing || !syncService.iCloudSyncEnabled)
     }

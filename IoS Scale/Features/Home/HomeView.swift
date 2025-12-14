@@ -44,7 +44,7 @@ struct HomeView: View {
                         if syncService.iCloudSyncEnabled {
                             Button {
                                 Task {
-                                    await syncService.sync()
+                                    await syncService.refreshStatus()
                                 }
                             } label: {
                                 Image(systemName: syncService.status.icon)

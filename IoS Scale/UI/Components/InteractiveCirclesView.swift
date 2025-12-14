@@ -32,9 +32,12 @@ struct InteractiveCirclesView: View {
     @State private var isDraggingOther = false
     @State private var initialOverlapValue: Double = 0
     @State private var lastHapticValue: Double = 0
+    @State private var initialSelfScale: Double = 1.0
+    @State private var initialOtherScale: Double = 1.0
     
     // Constants
     private let hapticThreshold: Double = 0.05
+    private let verticalDragSensitivity: Double = 0.003 // Scale change per pixel of vertical drag
     
     var body: some View {
         GeometryReader { geometry in
@@ -75,7 +78,6 @@ struct InteractiveCirclesView: View {
                     circleDiameter: circleDiameter,
                     isSelf: true
                 ))
-                .simultaneousGesture(scalingEnabled ? createScaleGesture(isSelf: true) : nil)
                 
                 // Other circle (right)
                 CircleView(
@@ -90,7 +92,29 @@ struct InteractiveCirclesView: View {
                     circleDiameter: circleDiameter,
                     isSelf: false
                 ))
-                .simultaneousGesture(scalingEnabled ? createScaleGesture(isSelf: false) : nil)
+                
+                // Vertical drag zones for scaling (only in Advanced mode)
+                if scalingEnabled {
+                    HStack(spacing: 0) {
+                        // Left zone - Self scale
+                        Rectangle()
+                            .fill(Color.clear)
+                            .contentShape(Rectangle())
+                            .gesture(createVerticalScaleGesture(isSelf: true))
+                        
+                        // Middle zone - no scaling (leave room for circles)
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(width: geometry.size.width * 0.5)
+                            .allowsHitTesting(false)
+                        
+                        // Right zone - Other scale
+                        Rectangle()
+                            .fill(Color.clear)
+                            .contentShape(Rectangle())
+                            .gesture(createVerticalScaleGesture(isSelf: false))
+                    }
+                }
                 
                 // Labels
                 VStack {
@@ -113,6 +137,23 @@ struct InteractiveCirclesView: View {
         .accessibilityLabel("IOS Scale circles")
         .accessibilityValue("Overlap: \(Int(overlapValue * 100)) percent")
         .accessibilityHint("Drag circles horizontally to adjust closeness")
+        .onAppear {
+            // Initialize scale values for pinch gesture
+            initialSelfScale = selfScale
+            initialOtherScale = otherScale
+        }
+        .onChange(of: selfScale) { _, newValue in
+            // Keep initial values in sync when changed via sliders
+            if !isDraggingSelf && !isDraggingOther {
+                initialSelfScale = newValue
+            }
+        }
+        .onChange(of: otherScale) { _, newValue in
+            // Keep initial values in sync when changed via sliders
+            if !isDraggingSelf && !isDraggingOther {
+                initialOtherScale = newValue
+            }
+        }
     }
     
     // MARK: - Circle Positioning
@@ -215,21 +256,49 @@ struct InteractiveCirclesView: View {
             }
     }
     
-    private func createScaleGesture(isSelf: Bool) -> some Gesture {
-        MagnificationGesture()
-            .onChanged { scale in
-                let currentScale = isSelf ? selfScale : otherScale
+    private func createVerticalScaleGesture(isSelf: Bool) -> some Gesture {
+        DragGesture(minimumDistance: 5)
+            .onChanged { value in
+                // Store initial scale at drag start
+                if isSelf && !isDraggingSelf {
+                    initialSelfScale = selfScale
+                    isDraggingSelf = true
+                    onDraggingChanged?(true)
+                } else if !isSelf && !isDraggingOther {
+                    initialOtherScale = otherScale
+                    isDraggingOther = true
+                    onDraggingChanged?(true)
+                }
+                
+                // Vertical drag: up increases scale, down decreases
+                // Negative because screen Y increases downward
+                let dragDelta = -value.translation.height * verticalDragSensitivity
+                let baseScale = isSelf ? initialSelfScale : initialOtherScale
+                
                 let newScale = min(max(
                     LayoutConstants.minCircleScale,
-                    currentScale * scale
+                    baseScale + dragDelta
                 ), LayoutConstants.maxCircleScale)
                 
-                withAnimation(.interactiveSpring(response: 0.2, dampingFraction: 0.7)) {
+                // Haptic at boundaries
+                if (newScale <= LayoutConstants.minCircleScale + 0.01 && (isSelf ? selfScale : otherScale) > LayoutConstants.minCircleScale + 0.01) ||
+                   (newScale >= LayoutConstants.maxCircleScale - 0.01 && (isSelf ? selfScale : otherScale) < LayoutConstants.maxCircleScale - 0.01) {
+                    HapticManager.shared.boundaryReached()
+                }
+                
+                withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.8)) {
                     if isSelf {
                         selfScale = newScale
                     } else {
                         otherScale = newScale
                     }
+                }
+            }
+            .onEnded { _ in
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    isDraggingSelf = false
+                    isDraggingOther = false
+                    onDraggingChanged?(false)
                 }
             }
     }

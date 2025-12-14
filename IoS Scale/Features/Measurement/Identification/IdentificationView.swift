@@ -18,113 +18,117 @@ struct IdentificationView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.38
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Question header
-                    VStack(spacing: Spacing.xs) {
-                        Text("To what extent do I identify with the other?")
-                            .font(Typography.title3)
-                            .fontWeight(.medium)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Drag left to increase identification")
-                            .font(Typography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.md)
-                    .padding(.horizontal, Spacing.md)
-                    
-                    // Direction indicator
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "arrow.left")
-                            .font(.caption)
-                        Text("Other → Self")
-                            .font(Typography.caption2)
-                        Image(systemName: "person.fill.checkmark")
-                            .font(.caption)
-                    }
-                    .foregroundStyle(.secondary)
-                    .padding(.top, Spacing.xs)
-                    
-                    // Interactive circles
-                    IdentificationCirclesView(
-                        identificationValue: $viewModel.identificationValue,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.38)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
-                        // Status display
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Question header
                         VStack(spacing: Spacing.xs) {
-                            // Identification label
-                            Text(viewModel.identificationLabel)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(identificationGradient)
-                                .contentTransition(.interpolate)
-                                .animation(.spring(response: 0.3), value: viewModel.identificationLabel)
-                            
-                            // Description
-                            Text(viewModel.identificationDescription)
-                                .font(Typography.body)
-                                .foregroundStyle(.secondary)
+                            Text("To what extent do I identify with the other?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
                                 .multilineTextAlignment(.center)
-                                .animation(.easeInOut(duration: 0.2), value: viewModel.identificationDescription)
-                        }
-                        
-                        // Slider control
-                        identificationSlider
-                            .padding(.horizontal, Spacing.lg)
-                        
-                        // Measurement counter
-                        if viewModel.measurementCount > 0 {
-                            Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                            
+                            Text("Drag left to increase identification")
                                 .font(Typography.caption)
-                                .foregroundStyle(Color(hex: "FFD700"))
+                                .foregroundStyle(.secondary)
                         }
+                        .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
                         
-                        // Action buttons
-                        HStack(spacing: Spacing.sm) {
-                            // Save button
-                            Button {
-                                viewModel.saveMeasurement()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
-                                }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                        // Direction indicator
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "arrow.left")
+                                .font(.caption)
+                            Text("Other → Self")
+                                .font(Typography.caption2)
+                            Image(systemName: "person.fill.checkmark")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(.secondary)
+                        .padding(.top, Spacing.xs)
+                        
+                        // Interactive circles
+                        IdentificationCirclesView(
+                            identificationValue: $viewModel.identificationValue,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
+                            // Status display
+                            VStack(spacing: Spacing.xs) {
+                                // Identification label
+                                Text(viewModel.identificationLabel)
+                                    .font(.system(size: isLandscape ? 22 : 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(identificationGradient)
+                                    .contentTransition(.interpolate)
+                                    .animation(.spring(response: 0.3), value: viewModel.identificationLabel)
+                                
+                                // Description
+                                Text(viewModel.identificationDescription)
+                                    .font(Typography.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .animation(.easeInOut(duration: 0.2), value: viewModel.identificationDescription)
                             }
                             
-                            // Exit button
-                            Button {
-                                viewModel.requestExit()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "xmark.circle.fill")
-                                    Text("Exit")
+                            // Slider control
+                            identificationSlider
+                                .padding(.horizontal, Spacing.lg)
+                            
+                            // Measurement counter
+                            if viewModel.measurementCount > 0 {
+                                Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color(hex: "FFD700"))
+                            }
+                            
+                            // Action buttons
+                            HStack(spacing: Spacing.sm) {
+                                // Save button
+                                Button {
+                                    viewModel.saveMeasurement()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Save")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(ColorPalette.primaryButtonGradient)
+                                    .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                                 }
-                                .font(Typography.headline)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(.ultraThinMaterial)
+                                
+                                // Exit button
+                                Button {
+                                    viewModel.requestExit()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "xmark.circle.fill")
+                                        Text("Exit")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(.ultraThinMaterial)
                                 .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                             }
                         }
                         .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
-                }
+                } // End VStack
+                .frame(minHeight: geometry.size.height)
+                } // End ScrollView
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

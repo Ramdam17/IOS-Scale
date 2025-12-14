@@ -34,9 +34,12 @@ struct InteractiveCirclesView: View {
     @State private var lastHapticValue: Double = 0
     @State private var initialSelfScale: Double = 1.0
     @State private var initialOtherScale: Double = 1.0
+    @State private var lastHapticSelfScale: Double = 1.0
+    @State private var lastHapticOtherScale: Double = 1.0
     
     // Constants
     private let hapticThreshold: Double = 0.05
+    private let scaleHapticThreshold: Double = 0.1 // Scale change threshold for haptic
     private let verticalDragSensitivity: Double = 0.003 // Scale change per pixel of vertical drag
     
     var body: some View {
@@ -262,10 +265,12 @@ struct InteractiveCirclesView: View {
                 // Store initial scale at drag start
                 if isSelf && !isDraggingSelf {
                     initialSelfScale = selfScale
+                    lastHapticSelfScale = selfScale
                     isDraggingSelf = true
                     onDraggingChanged?(true)
                 } else if !isSelf && !isDraggingOther {
                     initialOtherScale = otherScale
+                    lastHapticOtherScale = otherScale
                     isDraggingOther = true
                     onDraggingChanged?(true)
                 }
@@ -279,6 +284,17 @@ struct InteractiveCirclesView: View {
                     LayoutConstants.minCircleScale,
                     baseScale + dragDelta
                 ), LayoutConstants.maxCircleScale)
+                
+                // Continuous haptic feedback at thresholds
+                let lastHapticScale = isSelf ? lastHapticSelfScale : lastHapticOtherScale
+                if abs(newScale - lastHapticScale) >= scaleHapticThreshold {
+                    HapticManager.shared.lightImpact()
+                    if isSelf {
+                        lastHapticSelfScale = newScale
+                    } else {
+                        lastHapticOtherScale = newScale
+                    }
+                }
                 
                 // Haptic at boundaries
                 if (newScale <= LayoutConstants.minCircleScale + 0.01 && (isSelf ? selfScale : otherScale) > LayoutConstants.minCircleScale + 0.01) ||

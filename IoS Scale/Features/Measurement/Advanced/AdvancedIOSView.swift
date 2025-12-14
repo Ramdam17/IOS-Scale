@@ -29,6 +29,20 @@ struct AdvancedIOSView: View {
                             Spacer(minLength: geometry.size.height * 0.05)
                         }
                         
+                        // Question header
+                        VStack(spacing: Spacing.xs) {
+                            Text("How do you perceive your relationship?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
+                            
+                            Text("Adjust overlap and circle sizes")
+                                .font(Typography.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
+                        
                         // Circles area
                         InteractiveCirclesView(
                             overlapValue: $viewModel.overlapValue,
@@ -137,9 +151,9 @@ struct AdvancedIOSView: View {
                         
                         // Action buttons row
                         HStack(spacing: Spacing.sm) {
-                            // Reset scales button
+                            // Reset button
                             Button {
-                                viewModel.resetScales()
+                                viewModel.resetToInitial()
                             } label: {
                                 HStack {
                                     Image(systemName: "arrow.counterclockwise")

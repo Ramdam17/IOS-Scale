@@ -48,6 +48,9 @@ final class IdentificationViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial identification value when measurement started (for Reset button)
+    private var initialIdentificationValue: Double = 0.0
+    
     // MARK: - Computed Properties
     
     /// Label describing the current identification state
@@ -175,6 +178,17 @@ final class IdentificationViewModel: ObservableObject {
         case .randomPosition:
             identificationValue = Double.random(in: 0.0...0.8)
         }
+        
+        // Store initial value for Reset button
+        initialIdentificationValue = identificationValue
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            identificationValue = initialIdentificationValue
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

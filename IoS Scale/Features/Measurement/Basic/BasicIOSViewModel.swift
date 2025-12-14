@@ -47,6 +47,9 @@ final class BasicIOSViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial overlap value when measurement started (for Reset button)
+    private var initialOverlapValue: Double = 0.5
+    
     // MARK: - Initialization
     
     init() {
@@ -171,6 +174,17 @@ final class BasicIOSViewModel: ObservableObject {
         case .randomPosition:
             overlapValue = Double.random(in: 0.2...0.8)
         }
+        
+        // Store initial value for Reset button
+        initialOverlapValue = overlapValue
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            overlapValue = initialOverlapValue
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

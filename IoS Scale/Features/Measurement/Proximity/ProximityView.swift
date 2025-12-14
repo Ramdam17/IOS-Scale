@@ -36,12 +36,14 @@ struct ProximityView: View {
                             Text("How close do I feel to the other?")
                                 .font(Typography.title3)
                                 .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
                             
-                            Text("Drag circles closer or further apart")
+                            Text("Drag circles or use the slider")
                                 .font(Typography.caption)
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
                         
                         // Interactive circles with connecting line
                         ProximityCirclesView(
@@ -83,7 +85,7 @@ struct ProximityView: View {
                             }
                             
                             // Action buttons
-                            HStack(spacing: Spacing.sm) {
+                            VStack(spacing: Spacing.sm) {
                                 // Save button
                                 Button {
                                     viewModel.saveMeasurement()
@@ -100,23 +102,42 @@ struct ProximityView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                                 }
                                 
-                                // Exit button
-                                Button {
-                                    viewModel.requestExit()
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "xmark.circle.fill")
-                                        Text("Exit")
+                                // Reset and Exit row
+                                HStack(spacing: Spacing.sm) {
+                                    // Reset button
+                                    Button {
+                                        viewModel.resetToInitial()
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "arrow.counterclockwise")
+                                            Text("Reset")
+                                        }
+                                        .font(Typography.headline)
+                                        .foregroundStyle(.primary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, Spacing.sm)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                    }
+                                    
+                                    // Exit button
+                                    Button {
+                                        viewModel.requestExit()
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "xmark.circle.fill")
+                                            Text("Exit")
+                                        }
+                                        .font(Typography.headline)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, Spacing.sm)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                    }
                                 }
-                                .font(Typography.headline)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(.ultraThinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                             }
-                        }
-                        .padding(.horizontal, Spacing.lg)
+                            .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
                 } // End VStack

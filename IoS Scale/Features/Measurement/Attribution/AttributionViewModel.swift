@@ -48,6 +48,9 @@ final class AttributionViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial similarity value when measurement started (for Reset button)
+    private var initialSimilarityValue: Double = 0.5
+    
     // MARK: - Computed Properties
     
     /// Label describing the current similarity state
@@ -175,6 +178,17 @@ final class AttributionViewModel: ObservableObject {
         case .randomPosition:
             similarityValue = Double.random(in: 0.2...0.8)
         }
+        
+        // Store initial value for Reset button
+        initialSimilarityValue = similarityValue
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            similarityValue = initialSimilarityValue
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

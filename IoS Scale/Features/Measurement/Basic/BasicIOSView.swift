@@ -33,6 +33,20 @@ struct BasicIOSView: View {
                             Spacer(minLength: geometry.size.height * 0.05)
                         }
                         
+                        // Question header
+                        VStack(spacing: Spacing.xs) {
+                            Text("How close do you feel to the other?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
+                            
+                            Text("Drag circles or use the slider")
+                                .font(Typography.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
+                        
                         // Circles area
                         InteractiveCirclesView(
                             overlapValue: $viewModel.overlapValue,
@@ -76,25 +90,42 @@ struct BasicIOSView: View {
                                 .foregroundStyle(ColorPalette.selfCircleCore)
                         }
                         
-                        // Action buttons
+                        // Save button (primary)
+                        Button {
+                            viewModel.saveMeasurement()
+                        } label: {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                Text("Save")
+                            }
+                            .font(Typography.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.md)
+                            .background(ColorPalette.primaryButtonGradient)
+                            .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                        }
+                        .padding(.horizontal, Spacing.lg)
+                        .accessibilityLabel("Save measurement")
+                        .accessibilityHint("Saves the current position as a measurement")
+                        
+                        // Action buttons row
                         HStack(spacing: Spacing.sm) {
-                            // Save button
+                            // Reset button
                             Button {
-                                viewModel.saveMeasurement()
+                                viewModel.resetToInitial()
                             } label: {
                                 HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
+                                    Image(systemName: "arrow.counterclockwise")
+                                    Text("Reset")
                                 }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
+                                .font(Typography.subheadline)
+                                .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.md)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                .padding(.vertical, Spacing.sm)
+                                .background(Color.secondary.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius))
                             }
-                            .accessibilityLabel("Save measurement")
-                            .accessibilityHint("Saves the current position as a measurement")
                             
                             // Exit button
                             Button {
@@ -104,12 +135,12 @@ struct BasicIOSView: View {
                                     Image(systemName: "rectangle.portrait.and.arrow.right")
                                     Text("Exit")
                                 }
-                                .font(Typography.headline)
+                                .font(Typography.subheadline)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.md)
+                                .padding(.vertical, Spacing.sm)
                                 .background(Color.secondary.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius))
                             }
                             .accessibilityLabel("Exit session")
                             .accessibilityHint("Shows options to save and exit or discard session")

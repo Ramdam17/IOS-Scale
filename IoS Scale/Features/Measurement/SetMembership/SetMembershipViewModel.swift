@@ -80,6 +80,10 @@ final class SetMembershipViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial membership states when measurement started (for Reset button)
+    private var initialSelfInSet: Bool = true
+    private var initialOtherInSet: Bool = false
+    
     // MARK: - Initialization
     
     init() {
@@ -209,6 +213,19 @@ final class SetMembershipViewModel: ObservableObject {
             selfInSet = Bool.random()
             otherInSet = Bool.random()
         }
+        
+        // Store initial values for Reset button
+        initialSelfInSet = selfInSet
+        initialOtherInSet = otherInSet
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            selfInSet = initialSelfInSet
+            otherInSet = initialOtherInSet
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

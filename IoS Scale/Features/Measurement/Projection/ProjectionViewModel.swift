@@ -48,6 +48,9 @@ final class ProjectionViewModel: ObservableObject {
     private var modelContext: ModelContext?
     private var currentSession: SessionModel?
     
+    /// Initial projection value when measurement started (for Reset button)
+    private var initialProjectionValue: Double = 0.0
+    
     // MARK: - Computed Properties
     
     /// Label describing the current projection state
@@ -175,6 +178,17 @@ final class ProjectionViewModel: ObservableObject {
         case .randomPosition:
             projectionValue = Double.random(in: 0.0...0.8)
         }
+        
+        // Store initial value for Reset button
+        initialProjectionValue = projectionValue
+    }
+    
+    /// Reset to initial state of current measurement
+    func resetToInitial() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            projectionValue = initialProjectionValue
+        }
+        HapticManager.shared.selection()
     }
     
     private func saveCurrentPosition() {

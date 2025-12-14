@@ -24,6 +24,7 @@ struct IdentificationCirclesView: View {
     @State private var isDragging = false
     @State private var hasInitialized = false
     @State private var lastHapticValue: Double = 0
+    @State private var initialIdentificationValue: Double = 0
     
     // Layout constants
     private var circleSize: CGFloat {
@@ -268,36 +269,41 @@ struct IdentificationCirclesView: View {
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 5)
             .onChanged { value in
+                // Set initial value on drag start (like other metrics)
                 if !isDragging {
+                    initialIdentificationValue = identificationValue
+                    lastHapticValue = identificationValue
                     isDragging = true
                     onDraggingChanged?(true)
                     HapticManager.shared.lightImpact()
                 }
                 
                 // Horizontal drag: left = more identification (Other moves toward Self), right = less
-                // Improved sensitivity for better control
-                let dragSensitivity: CGFloat = 200
-                let delta = -value.translation.width / dragSensitivity
-                let adjustedValue = identificationValue + delta * 0.15
+                // Use same pattern as InteractiveCirclesView and OverlapCirclesView
+                let dragRange: CGFloat = 300 // Approximate movement range
+                let normalizedDelta = -value.translation.width / dragRange
+                let newValue = min(max(0, initialIdentificationValue + normalizedDelta), 1)
                 
                 // Haptic feedback at thresholds
-                if abs(adjustedValue - lastHapticValue) >= hapticThreshold {
+                if abs(newValue - lastHapticValue) >= hapticThreshold {
                     HapticManager.shared.lightImpact()
-                    lastHapticValue = adjustedValue
+                    lastHapticValue = newValue
                 }
                 
-                // Special haptic when fully identified
-                if adjustedValue >= 0.98 && identificationValue < 0.98 {
+                // Boundary haptic
+                if (newValue <= 0.01 && identificationValue > 0.01) || (newValue >= 0.99 && identificationValue < 0.99) {
                     HapticManager.shared.success()
                 }
                 
-                withAnimation(.interactiveSpring(response: 0.15)) {
-                    identificationValue = min(max(0, adjustedValue), 1)
+                withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.8)) {
+                    identificationValue = newValue
                 }
             }
             .onEnded { _ in
-                isDragging = false
-                onDraggingChanged?(false)
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    isDragging = false
+                    onDraggingChanged?(false)
+                }
             }
     }
 }

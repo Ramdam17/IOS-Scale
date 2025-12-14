@@ -25,6 +25,7 @@ struct ProjectionCirclesView: View {
     @State private var isDragging = false
     @State private var hasInitialized = false
     @State private var lastHapticValue: Double = 0
+    @State private var initialProjectionValue: Double = 0
     
     // Layout constants
     private var circleSize: CGFloat {
@@ -272,36 +273,41 @@ struct ProjectionCirclesView: View {
     private var dragGesture: some Gesture {
         DragGesture(minimumDistance: 5)
             .onChanged { value in
+                // Set initial value on drag start (like other metrics)
                 if !isDragging {
+                    initialProjectionValue = projectionValue
+                    lastHapticValue = projectionValue
                     isDragging = true
                     onDraggingChanged?(true)
                     HapticManager.shared.lightImpact()
                 }
                 
                 // Horizontal drag: right = more projection (Self moves toward Other), left = less
-                // Improved sensitivity for better control
-                let dragSensitivity: CGFloat = 200
-                let delta = value.translation.width / dragSensitivity
-                let adjustedValue = projectionValue + delta * 0.15
+                // Use same pattern as InteractiveCirclesView and OverlapCirclesView
+                let dragRange: CGFloat = 300 // Approximate movement range
+                let normalizedDelta = value.translation.width / dragRange
+                let newValue = min(max(0, initialProjectionValue + normalizedDelta), 1)
                 
                 // Haptic feedback at thresholds
-                if abs(adjustedValue - lastHapticValue) >= hapticThreshold {
+                if abs(newValue - lastHapticValue) >= hapticThreshold {
                     HapticManager.shared.lightImpact()
-                    lastHapticValue = adjustedValue
+                    lastHapticValue = newValue
                 }
                 
-                // Special haptic when fully projected
-                if adjustedValue >= 0.98 && projectionValue < 0.98 {
+                // Boundary haptic
+                if (newValue <= 0.01 && projectionValue > 0.01) || (newValue >= 0.99 && projectionValue < 0.99) {
                     HapticManager.shared.success()
                 }
                 
-                withAnimation(.interactiveSpring(response: 0.15)) {
-                    projectionValue = min(max(0, adjustedValue), 1)
+                withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.8)) {
+                    projectionValue = newValue
                 }
             }
             .onEnded { _ in
-                isDragging = false
-                onDraggingChanged?(false)
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    isDragging = false
+                    onDraggingChanged?(false)
+                }
             }
     }
 }

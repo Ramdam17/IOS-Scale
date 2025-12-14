@@ -3,13 +3,13 @@
 //  IoS Scale
 //
 //  Interactive circles component for Overlap modality.
-//  Features highlighted intersection zone and vertical drag gesture.
+//  Features highlighted intersection zone and horizontal drag gesture.
 //
 
 import SwiftUI
 
 /// View displaying two interactive circles with emphasized overlap visualization
-/// Uses vertical drag to adjust overlap amount
+/// Uses horizontal drag to adjust overlap amount (consistent with Basic IOS)
 struct OverlapCirclesView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -68,20 +68,17 @@ struct OverlapCirclesView: View {
                     )
                 }
                 
-                // Drag indicator
-                dragIndicator(in: geometry.size)
-                
                 // Labels
                 circleLabels(positions: positions, diameter: circleDiameter)
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
             .contentShape(Rectangle())
-            .gesture(createVerticalDragGesture(in: geometry.size))
+            .gesture(createHorizontalDragGesture(in: geometry.size))
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Overlap measurement circles")
         .accessibilityValue("Overlap: \(Int(overlapValue * 100)) percent")
-        .accessibilityHint("Drag up to increase overlap, down to decrease")
+        .accessibilityHint("Drag horizontally to adjust overlap")
     }
     
     // MARK: - Circle Positioning
@@ -111,7 +108,7 @@ struct OverlapCirclesView: View {
         // overlap = 0 -> circles just touching (separation = diameter)
         // overlap = 1 -> circles completely overlap (same position, separation = 0)
         let maxSeparation = circleDiameter  // Circles just touching when overlap = 0
-        let minSeparation: CGFloat = 0  // Fully merged when overlap = 1
+        // minSeparation = 0 when fully merged (overlap = 1)
         
         let separation = maxSeparation * (1 - overlapValue)
         
@@ -222,24 +219,6 @@ struct OverlapCirclesView: View {
     }
     
     @ViewBuilder
-    private func dragIndicator(in size: CGSize) -> some View {
-        VStack(spacing: Spacing.xs) {
-            Image(systemName: "chevron.up")
-                .font(.system(size: 16, weight: .semibold))
-            
-            Text("Drag to adjust")
-                .font(Typography.caption)
-            
-            Image(systemName: "chevron.down")
-                .font(.system(size: 16, weight: .semibold))
-        }
-        .foregroundStyle(.secondary.opacity(isDragging ? 0.3 : 0.6))
-        .position(x: size.width / 2, y: size.height * 0.85)
-        .opacity(isDragging ? 0.3 : 1)
-        .animation(.easeInOut(duration: 0.2), value: isDragging)
-    }
-    
-    @ViewBuilder
     private func circleLabels(positions: CirclePositions, diameter: CGFloat) -> some View {
         // Self label
         Text("Self")
@@ -262,7 +241,7 @@ struct OverlapCirclesView: View {
     
     // MARK: - Gestures
     
-    private func createVerticalDragGesture(in size: CGSize) -> some Gesture {
+    private func createHorizontalDragGesture(in size: CGSize) -> some Gesture {
         DragGesture(minimumDistance: 5)
             .onChanged { value in
                 // Set initial value on drag start
@@ -273,11 +252,27 @@ struct OverlapCirclesView: View {
                     onDraggingChanged?(true)
                 }
                 
-                // Vertical drag: up = more overlap, down = less overlap
-                let dragRange = size.height * 0.4
-                let normalizedDelta = -value.translation.height / dragRange
+                // Horizontal drag: drag toward center = more overlap
+                // Use absolute horizontal movement for intuitive control
+                let dragRange = size.width * 0.4
                 
-                let newValue = min(max(0, initialOverlapValue + normalizedDelta), 1)
+                // Determine drag direction based on starting position
+                // Dragging from left side: right = increase overlap
+                // Dragging from right side: left = increase overlap
+                // For simplicity, use horizontal distance from start
+                let normalizedDelta = abs(value.translation.width) / dragRange
+                
+                // If dragging outward (away from center), decrease overlap
+                // If dragging inward (toward center), increase overlap
+                let startX = value.startLocation.x
+                let centerX = size.width / 2
+                let isLeftSide = startX < centerX
+                
+                let dragDirection = value.translation.width
+                let isMovingInward = (isLeftSide && dragDirection > 0) || (!isLeftSide && dragDirection < 0)
+                
+                let delta = isMovingInward ? normalizedDelta : -normalizedDelta
+                let newValue = min(max(0, initialOverlapValue + delta), 1)
                 
                 // Haptic feedback at thresholds
                 if abs(newValue - lastHapticValue) >= hapticThreshold {

@@ -161,22 +161,20 @@ struct ModalityCardView: View {
                     
                     Spacer()
                     
-                    // Expand chevron (only show on iPhone where cards are collapsed by default)
-                    if !defaultExpanded {
-                        Image(systemName: "chevron.down")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                    }
+                    // Expand chevron - always show to indicate toggle capability
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
                 
-                // Description (always visible)
+                // Description - show full text when expanded, 2 lines when collapsed
                 Text(modality.description)
                     .font(Typography.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(isExpanded ? nil : 2)
                 
-                // Expanded content
+                // Expanded content (animation preview only)
                 if isExpanded {
                     Divider()
                         .padding(.vertical, Spacing.xs)
@@ -186,20 +184,25 @@ struct ModalityCardView: View {
                         .frame(height: PreviewConstants.previewHeight)
                         .background(modality.tintColor.opacity(0.05))
                         .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.smallCornerRadius))
+                }
+                
+                // Start button - ALWAYS visible when modality is available
+                if modality.isAvailable {
+                    if !isExpanded {
+                        Divider()
+                            .padding(.vertical, Spacing.xs)
+                    }
                     
-                    // Start button
-                    if modality.isAvailable {
-                        NavigationLink {
-                            destinationView(for: modality)
-                        } label: {
-                            Text("Start Session")
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
-                        }
+                    NavigationLink {
+                        destinationView(for: modality)
+                    } label: {
+                        Text("Start Session")
+                            .font(Typography.headline)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.sm)
+                            .background(ColorPalette.primaryButtonGradient)
+                            .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
                     }
                 }
             }
@@ -210,11 +213,9 @@ struct ModalityCardView: View {
         .accessibilityHint(modality.isAvailable ? "Double tap to \(isExpanded ? "collapse" : "expand"), then tap Start Session to begin" : "This modality is not yet available")
         .accessibilityAddTraits(modality.isAvailable ? .isButton : [])
         .onTapGesture {
-            // Only allow collapsing on iPad, always toggle on iPhone
-            if !defaultExpanded || isExpanded {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    isExpanded.toggle()
-                }
+            // Always allow toggle on both iPhone and iPad
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                isExpanded.toggle()
             }
         }
         .onAppear {

@@ -24,6 +24,7 @@ struct ObservationCirclesView: View {
     @State private var isDragging = false
     @State private var hasInitialized = false
     @State private var lastHapticValue: Double = 0
+    @State private var initialParticipationValue: Double = 0
     
     // Layout constants
     private var circleSize: CGFloat {
@@ -264,14 +265,15 @@ struct ObservationCirclesView: View {
             .onChanged { value in
                 if !isDragging {
                     isDragging = true
+                    initialParticipationValue = participationValue
                     onDraggingChanged?(true)
                     HapticManager.shared.lightImpact()
                 }
                 
                 // Horizontal drag: right = more participation, left = more observation
-                let dragSensitivity: CGFloat = 250
-                let delta = value.translation.width / dragSensitivity
-                let adjustedValue = participationValue + delta * 0.1
+                let dragRange: CGFloat = 300
+                let normalizedDelta = value.translation.width / dragRange
+                let adjustedValue = initialParticipationValue + normalizedDelta
                 
                 // Haptic feedback at thresholds
                 if abs(adjustedValue - lastHapticValue) >= hapticThreshold {
@@ -284,7 +286,7 @@ struct ObservationCirclesView: View {
                     HapticManager.shared.success()
                 }
                 
-                withAnimation(.interactiveSpring(response: 0.15)) {
+                withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.8)) {
                     participationValue = min(max(0, adjustedValue), 1)
                 }
             }

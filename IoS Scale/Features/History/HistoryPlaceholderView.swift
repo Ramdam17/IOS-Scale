@@ -18,7 +18,7 @@ struct HistoryPlaceholderView: View {
     @State private var showExportSheet = false
     
     private var totalMeasurements: Int {
-        sessions.reduce(0) { $0 + $1.measurements.count }
+        sessions.reduce(0) { $0 + ($1.measurements ?? []).count }
     }
     
     var body: some View {

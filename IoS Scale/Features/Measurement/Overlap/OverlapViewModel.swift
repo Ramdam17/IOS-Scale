@@ -98,7 +98,7 @@ final class OverlapViewModel: ObservableObject {
             primaryValue: overlapValue
         )
         
-        session.measurements.append(measurement)
+        session.measurements?.append(measurement)
         
         do {
             try context.save()
@@ -119,11 +119,11 @@ final class OverlapViewModel: ObservableObject {
             primaryValue: overlapValue
         )
         
-        session.measurements.append(measurement)
+        session.measurements?.append(measurement)
         
         do {
             try context.save()
-            measurementCount = session.measurements.count
+            measurementCount = (session.measurements ?? []).count
             showSaveConfirmation = true
             HapticManager.shared.success()
             
@@ -158,7 +158,7 @@ final class OverlapViewModel: ObservableObject {
         guard let session = currentSession, let context = modelContext else { return }
         
         // Only delete if no measurements were saved
-        if session.measurements.isEmpty {
+        if (session.measurements ?? []).isEmpty {
             context.delete(session)
         }
     }

@@ -92,7 +92,7 @@ final class ExportService {
         let dateFormatter = ISO8601DateFormatter()
         
         for session in sessions {
-            for measurement in session.measurements {
+            for measurement in session.measurements ?? [] {
                 var row: [String] = [
                     session.id.uuidString,
                     session.modality.rawValue,
@@ -186,7 +186,7 @@ struct ExportSession: Codable {
         self.modality = session.modality.rawValue
         self.createdAt = session.createdAt
         self.notes = includeMetadata ? session.notes : nil
-        self.measurements = session.measurements.map { ExportMeasurement(from: $0, includeMetadata: includeMetadata) }
+        self.measurements = (session.measurements ?? []).map { ExportMeasurement(from: $0, includeMetadata: includeMetadata) }
     }
 }
 

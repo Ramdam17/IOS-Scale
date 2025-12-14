@@ -116,8 +116,8 @@ final class IdentificationViewModel: ObservableObject {
             secondaryValues: nil
         )
         
-        session.measurements.append(measurement)
-        measurementCount = session.measurements.count
+        session.measurements?.append(measurement)
+        measurementCount = (session.measurements ?? []).count
         
         // Save context
         try? modelContext?.save()
@@ -154,7 +154,7 @@ final class IdentificationViewModel: ObservableObject {
             shouldDismiss = true
             
         case .exitWithoutSaving:
-            if let session = currentSession, session.measurements.isEmpty {
+            if let session = currentSession, (session.measurements ?? []).isEmpty {
                 modelContext?.delete(session)
             }
             shouldDismiss = true

@@ -71,9 +71,10 @@ extension Measurement {
 
 @Model
 final class MeasurementModel {
-    var id: UUID
-    var timestamp: Date
-    var primaryValue: Double
+    // CloudKit requires default values for all non-optional attributes
+    var id: UUID = UUID()
+    var timestamp: Date = Date()
+    var primaryValue: Double = 0.0
     var secondaryValuesData: Data?
     
     @Relationship(inverse: \SessionModel.measurements)
@@ -82,7 +83,7 @@ final class MeasurementModel {
     init(
         id: UUID = UUID(),
         timestamp: Date = Date(),
-        primaryValue: Double,
+        primaryValue: Double = 0.0,
         secondaryValues: [String: Double]? = nil
     ) {
         self.id = id

@@ -110,7 +110,7 @@ final class AdvancedIOSViewModel: ObservableObject {
             secondaryValues: secondaryValues
         )
         
-        session.measurements.append(measurement)
+        session.measurements?.append(measurement)
         
         do {
             try context.save()
@@ -149,7 +149,7 @@ final class AdvancedIOSViewModel: ObservableObject {
             secondaryValues: secondaryValues
         )
         
-        session.measurements.append(measurement)
+        session.measurements?.append(measurement)
         
         do {
             try context.save()
@@ -186,7 +186,7 @@ final class AdvancedIOSViewModel: ObservableObject {
         guard let session = currentSession, let context = modelContext else { return }
         
         // Delete empty session
-        if session.measurements.isEmpty {
+        if (session.measurements ?? []).isEmpty {
             context.delete(session)
         }
     }

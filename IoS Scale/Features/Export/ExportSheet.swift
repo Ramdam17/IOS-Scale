@@ -31,7 +31,7 @@ struct ExportSheet: View {
     }
     
     private var measurementCount: Int {
-        sessionsToExport.reduce(0) { $0 + $1.measurements.count }
+        sessionsToExport.reduce(0) { $0 + ($1.measurements ?? []).count }
     }
     
     var body: some View {

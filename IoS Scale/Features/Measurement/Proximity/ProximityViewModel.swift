@@ -128,8 +128,8 @@ final class ProximityViewModel: ObservableObject {
             secondaryValues: secondaryValues
         )
         
-        session.measurements.append(measurement)
-        measurementCount = session.measurements.count
+        session.measurements?.append(measurement)
+        measurementCount = (session.measurements ?? []).count
         
         // Save context
         try? modelContext?.save()
@@ -168,7 +168,7 @@ final class ProximityViewModel: ObservableObject {
             
         case .exitWithoutSaving:
             // Delete session if no measurements
-            if let session = currentSession, session.measurements.isEmpty {
+            if let session = currentSession, (session.measurements ?? []).isEmpty {
                 modelContext?.delete(session)
             }
             shouldDismiss = true

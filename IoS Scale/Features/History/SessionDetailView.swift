@@ -21,21 +21,21 @@ struct SessionDetailView: View {
     @State private var editedNotes: String = ""
     
     private var sortedMeasurements: [MeasurementModel] {
-        session.measurements.sorted { $0.timestamp < $1.timestamp }
+        (session.measurements ?? []).sorted { $0.timestamp < $1.timestamp }
     }
     
     private var averageValue: Double {
-        guard !session.measurements.isEmpty else { return 0 }
-        let sum = session.measurements.reduce(0.0) { $0 + $1.primaryValue }
-        return sum / Double(session.measurements.count)
+        guard !(session.measurements ?? []).isEmpty else { return 0 }
+        let sum = (session.measurements ?? []).reduce(0.0) { $0 + $1.primaryValue }
+        return sum / Double((session.measurements ?? []).count)
     }
     
     private var minValue: Double {
-        session.measurements.map(\.primaryValue).min() ?? 0
+        (session.measurements ?? []).map(\.primaryValue).min() ?? 0
     }
     
     private var maxValue: Double {
-        session.measurements.map(\.primaryValue).max() ?? 0
+        (session.measurements ?? []).map(\.primaryValue).max() ?? 0
     }
     
     var body: some View {
@@ -45,7 +45,7 @@ struct SessionDetailView: View {
                 sessionHeader
                 
                 // Chart visualization
-                if session.measurements.count > 1 {
+                if (session.measurements ?? []).count > 1 {
                     chartSection
                 }
                 
@@ -188,7 +188,7 @@ struct SessionDetailView: View {
             HStack(spacing: Spacing.md) {
                 StatCard(
                     title: "Count",
-                    value: "\(session.measurements.count)",
+                    value: "\((session.measurements ?? []).count)",
                     icon: "number"
                 )
                 
@@ -226,28 +226,28 @@ struct SessionDetailView: View {
     // MARK: - Set Membership Stats
     
     private var setMembershipStats: some View {
-        let bothIn = session.measurements.filter { measurement in
+        let bothIn = (session.measurements ?? []).filter { measurement in
             guard let values = measurement.secondaryValues else { return false }
             let selfIn = (values["selfInSet"] ?? 0) > 0.5
             let otherIn = (values["otherInSet"] ?? 0) > 0.5
             return selfIn && otherIn
         }.count
         
-        let selfOnly = session.measurements.filter { measurement in
+        let selfOnly = (session.measurements ?? []).filter { measurement in
             guard let values = measurement.secondaryValues else { return false }
             let selfIn = (values["selfInSet"] ?? 0) > 0.5
             let otherIn = (values["otherInSet"] ?? 0) > 0.5
             return selfIn && !otherIn
         }.count
         
-        let otherOnly = session.measurements.filter { measurement in
+        let otherOnly = (session.measurements ?? []).filter { measurement in
             guard let values = measurement.secondaryValues else { return false }
             let selfIn = (values["selfInSet"] ?? 0) > 0.5
             let otherIn = (values["otherInSet"] ?? 0) > 0.5
             return !selfIn && otherIn
         }.count
         
-        let neither = session.measurements.filter { measurement in
+        let neither = (session.measurements ?? []).filter { measurement in
             guard let values = measurement.secondaryValues else { return measurement.primaryValue < 0.1 }
             let selfIn = (values["selfInSet"] ?? 0) > 0.5
             let otherIn = (values["otherInSet"] ?? 0) > 0.5
@@ -314,9 +314,9 @@ struct SessionDetailView: View {
     // MARK: - Advanced IOS Stats
     
     private var advancedIOSStats: some View {
-        let avgSelfScale = session.measurements.compactMap { $0.secondaryValues?["selfScale"] ?? $0.secondaryValues?["self_scale"] }.reduce(0, +) / Double(max(1, session.measurements.count))
+        let avgSelfScale = (session.measurements ?? []).compactMap { $0.secondaryValues?["selfScale"] ?? $0.secondaryValues?["self_scale"] }.reduce(0, +) / Double(max(1, (session.measurements ?? []).count))
         
-        let avgOtherScale = session.measurements.compactMap { $0.secondaryValues?["otherScale"] ?? $0.secondaryValues?["other_scale"] }.reduce(0, +) / Double(max(1, session.measurements.count))
+        let avgOtherScale = (session.measurements ?? []).compactMap { $0.secondaryValues?["otherScale"] ?? $0.secondaryValues?["other_scale"] }.reduce(0, +) / Double(max(1, (session.measurements ?? []).count))
         
         return HStack(spacing: Spacing.md) {
             StatCard(

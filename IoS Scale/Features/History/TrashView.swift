@@ -179,7 +179,7 @@ private struct TrashRowView: View {
                     .foregroundStyle(.primary)
                 
                 HStack {
-                    Label("\(session.measurements.count)", systemImage: "number")
+                    Label("\((session.measurements ?? []).count)", systemImage: "number")
                         .font(Typography.caption)
                         .foregroundStyle(.secondary)
                     

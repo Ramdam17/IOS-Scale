@@ -73,20 +73,22 @@ extension Session {
 
 @Model
 final class SessionModel {
-    var id: UUID
-    var modalityRawValue: String
-    var createdAt: Date
+    // CloudKit requires default values for all non-optional attributes
+    var id: UUID = UUID()
+    var modalityRawValue: String = ModalityType.basicIOS.rawValue
+    var createdAt: Date = Date()
     var notes: String?
     
     /// Soft delete: when not nil, session is in trash
     var deletedAt: Date?
     
+    // CloudKit requires relationships to be optional
     @Relationship(deleteRule: .cascade)
-    var measurements: [MeasurementModel] = []
+    var measurements: [MeasurementModel]? = []
     
     init(
         id: UUID = UUID(),
-        modality: ModalityType,
+        modality: ModalityType = .basicIOS,
         createdAt: Date = Date(),
         notes: String? = nil
     ) {
@@ -95,6 +97,7 @@ final class SessionModel {
         self.createdAt = createdAt
         self.notes = notes
         self.deletedAt = nil
+        self.measurements = []
     }
     
     /// Get the modality type
@@ -123,7 +126,7 @@ final class SessionModel {
             id: id,
             modality: modality,
             createdAt: createdAt,
-            measurements: measurements.map { $0.toMeasurement() },
+            measurements: (measurements ?? []).map { $0.toMeasurement() },
             notes: notes
         )
     }

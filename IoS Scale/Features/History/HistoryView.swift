@@ -61,7 +61,7 @@ struct HistoryView: View {
         case .dateOldest:
             result.sort { $0.createdAt < $1.createdAt }
         case .mostMeasurements:
-            result.sort { $0.measurements.count > $1.measurements.count }
+            result.sort { ($0.measurements ?? []).count > ($1.measurements ?? []).count }
         case .modalityName:
             result.sort { $0.modality.displayName < $1.modality.displayName }
         }
@@ -70,7 +70,7 @@ struct HistoryView: View {
     }
     
     private var totalMeasurements: Int {
-        sessions.reduce(0) { $0 + $1.measurements.count }
+        sessions.reduce(0) { $0 + ($1.measurements ?? []).count }
     }
     
     private var usedModalities: [ModalityType] {

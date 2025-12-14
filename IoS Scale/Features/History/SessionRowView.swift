@@ -13,7 +13,7 @@ struct SessionRowView: View {
     let session: SessionModel
     
     private var averageValue: Double? {
-        let measurements = session.measurements
+        let measurements = session.measurements ?? []
         guard !measurements.isEmpty else { return nil }
         let sum = measurements.reduce(0.0) { $0 + $1.primaryValue }
         return sum / Double(measurements.count)
@@ -54,7 +54,7 @@ struct SessionRowView: View {
                 
                 HStack {
                     // Measurement count
-                    Label("\(session.measurements.count)", systemImage: "number")
+                    Label("\((session.measurements ?? []).count)", systemImage: "number")
                         .font(Typography.caption)
                         .foregroundStyle(.secondary)
                     
@@ -111,7 +111,7 @@ struct SessionRowView: View {
     
     private var miniChart: some View {
         HStack(alignment: .bottom, spacing: 2) {
-            let measurements = session.measurements.suffix(5)
+            let measurements = (session.measurements ?? []).suffix(5)
             ForEach(Array(measurements.enumerated()), id: \.offset) { _, measurement in
                 RoundedRectangle(cornerRadius: 1)
                     .fill(ColorPalette.selfCircleCore.gradient)

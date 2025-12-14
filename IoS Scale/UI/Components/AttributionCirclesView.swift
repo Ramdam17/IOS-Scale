@@ -24,6 +24,7 @@ struct AttributionCirclesView: View {
     @State private var isDragging = false
     @State private var hasInitialized = false
     @State private var lastHapticValue: Double = 0
+    @State private var initialSimilarityValue: Double = 0
     
     // Layout constants
     private var circleSize: CGFloat {
@@ -281,14 +282,15 @@ struct AttributionCirclesView: View {
             .onChanged { value in
                 if !isDragging {
                     isDragging = true
+                    initialSimilarityValue = similarityValue
                     onDraggingChanged?(true)
                     HapticManager.shared.lightImpact()
                 }
                 
                 // Horizontal drag: right = more similar (circles converge), left = more different
-                let dragSensitivity: CGFloat = 250
-                let delta = value.translation.width / dragSensitivity
-                let adjustedValue = similarityValue + delta * 0.1
+                let dragRange: CGFloat = 300
+                let normalizedDelta = value.translation.width / dragRange
+                let adjustedValue = initialSimilarityValue + normalizedDelta
                 
                 // Haptic feedback at thresholds
                 if abs(adjustedValue - lastHapticValue) >= hapticThreshold {
@@ -301,7 +303,7 @@ struct AttributionCirclesView: View {
                     HapticManager.shared.success()
                 }
                 
-                withAnimation(.interactiveSpring(response: 0.15)) {
+                withAnimation(.interactiveSpring(response: 0.15, dampingFraction: 0.8)) {
                     similarityValue = min(max(0, adjustedValue), 1)
                 }
             }

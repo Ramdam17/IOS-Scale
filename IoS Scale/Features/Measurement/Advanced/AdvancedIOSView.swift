@@ -12,16 +12,23 @@ import SwiftData
 struct AdvancedIOSView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @StateObject private var viewModel = AdvancedIOSViewModel()
     
     var body: some View {
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
+            let isPad = horizontalSizeClass == .regular
             let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.45
             
             ZStack {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // iPad top spacing for vertical centering
+                        if isPad {
+                            Spacer(minLength: geometry.size.height * 0.05)
+                        }
+                        
                         // Circles area
                         InteractiveCirclesView(
                             overlapValue: $viewModel.overlapValue,

@@ -12,6 +12,7 @@ import SwiftData
 struct BasicIOSView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @StateObject private var viewModel = BasicIOSViewModel()
     
     // Placeholder scales (not adjustable in Basic mode)
@@ -20,24 +21,32 @@ struct BasicIOSView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let isPad = horizontalSizeClass == .regular
+            let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.50
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Circles area
-                    InteractiveCirclesView(
-                        overlapValue: $viewModel.overlapValue,
-                        selfScale: $selfScale,
-                        otherScale: $otherScale,
-                        scalingEnabled: false,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // iPad top spacing for vertical centering
+                        if isPad {
+                            Spacer(minLength: geometry.size.height * 0.05)
                         }
-                    )
-                    .frame(height: geometry.size.height * 0.50)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
+                        
+                        // Circles area
+                        InteractiveCirclesView(
+                            overlapValue: $viewModel.overlapValue,
+                            selfScale: $selfScale,
+                            otherScale: $otherScale,
+                            scalingEnabled: false,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
                         // Status label
                         Text(viewModel.overlapLabel)
                             .font(Typography.title3)
@@ -106,8 +115,10 @@ struct BasicIOSView: View {
                             .accessibilityHint("Shows options to save and exit or discard session")
                         }
                         .padding(.horizontal, Spacing.lg)
+                        }
+                        .padding(.bottom, Spacing.xl)
                     }
-                    .padding(.bottom, Spacing.xl)
+                    .frame(minHeight: geometry.size.height)
                 }
                 
                 // Save confirmation overlay

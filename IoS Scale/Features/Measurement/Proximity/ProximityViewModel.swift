@@ -28,6 +28,12 @@ final class ProximityViewModel: ObservableObject {
     /// Proximity value: 0 = far apart, 1 = touching
     @Published var proximityValue: Double = 0.0
     
+    /// Normalized position of the Self circle (0 = left edge, 1 = right edge)
+    @Published var selfPositionNormalized: Double = 0.25
+    
+    /// Normalized position of the Other circle (0 = left edge, 1 = right edge)
+    @Published var otherPositionNormalized: Double = 0.75
+    
     /// Whether the user is currently dragging
     @Published var isDragging: Bool = false
     
@@ -111,9 +117,15 @@ final class ProximityViewModel: ObservableObject {
     func saveMeasurement() {
         guard let session = currentSession else { return }
         
+        // Include circle positions as secondary values for scientific analysis
+        let secondaryValues: [String: Double] = [
+            Measurement.SecondaryKey.selfPosition.rawValue: selfPositionNormalized,
+            Measurement.SecondaryKey.otherPosition.rawValue: otherPositionNormalized
+        ]
+        
         let measurement = MeasurementModel(
             primaryValue: proximityValue,
-            secondaryValues: nil
+            secondaryValues: secondaryValues
         )
         
         session.measurements.append(measurement)

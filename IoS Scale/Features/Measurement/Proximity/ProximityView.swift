@@ -48,6 +48,8 @@ struct ProximityView: View {
                         // Interactive circles with connecting line
                         ProximityCirclesView(
                             proximityValue: $viewModel.proximityValue,
+                            selfPositionNormalized: $viewModel.selfPositionNormalized,
+                            otherPositionNormalized: $viewModel.otherPositionNormalized,
                             onDraggingChanged: { isDragging in
                                 viewModel.isDragging = isDragging
                             }

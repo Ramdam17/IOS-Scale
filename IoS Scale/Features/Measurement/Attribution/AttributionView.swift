@@ -18,106 +18,108 @@ struct AttributionView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.40
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Question header
-                    VStack(spacing: Spacing.xs) {
-                        Text("How similar do I perceive myself to the other?")
-                            .font(Typography.title3)
-                            .fontWeight(.medium)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Drag right for similar, left for different")
-                            .font(Typography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.md)
-                    .padding(.horizontal, Spacing.md)
-                    
-                    // Similarity indicator icons
-                    HStack(spacing: Spacing.lg) {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "person.slash")
-                                .font(.caption)
-                            Text("Different")
-                                .font(Typography.caption2)
-                        }
-                        .foregroundStyle(.secondary)
-                        
-                        Image(systemName: "arrow.left.arrow.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                        
-                        HStack(spacing: Spacing.xs) {
-                            Text("Similar")
-                                .font(Typography.caption2)
-                            Image(systemName: "person.2")
-                                .font(.caption)
-                        }
-                        .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.xs)
-                    
-                    // Interactive circles
-                    AttributionCirclesView(
-                        similarityValue: $viewModel.similarityValue,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.40)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
-                        // Status display
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Question header
                         VStack(spacing: Spacing.xs) {
-                            // Similarity label
-                            Text(viewModel.similarityLabel)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(similarityGradient)
-                                .contentTransition(.interpolate)
-                                .animation(.spring(response: 0.3), value: viewModel.similarityLabel)
-                            
-                            // Description
-                            Text(viewModel.similarityDescription)
-                                .font(Typography.body)
-                                .foregroundStyle(.secondary)
+                            Text("How similar do I perceive myself to the other?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
                                 .multilineTextAlignment(.center)
-                                .animation(.easeInOut(duration: 0.2), value: viewModel.similarityDescription)
-                        }
-                        
-                        // Slider control
-                        similaritySlider
-                            .padding(.horizontal, Spacing.lg)
-                        
-                        // Measurement counter
-                        if viewModel.measurementCount > 0 {
-                            Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                            
+                            Text("Drag right for similar, left for different")
                                 .font(Typography.caption)
-                                .foregroundStyle(Color(hex: "FAB1A0"))
+                                .foregroundStyle(.secondary)
                         }
+                        .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
                         
-                        // Action buttons
-                        HStack(spacing: Spacing.sm) {
-                            // Save button
-                            Button {
-                                viewModel.saveMeasurement()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
-                                }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                        // Similarity indicator icons
+                        HStack(spacing: Spacing.lg) {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "person.slash")
+                                    .font(.caption)
+                                Text("Different")
+                                    .font(Typography.caption2)
+                            }
+                            .foregroundStyle(.secondary)
+                            
+                            Image(systemName: "arrow.left.arrow.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                            
+                            HStack(spacing: Spacing.xs) {
+                                Text("Similar")
+                                    .font(Typography.caption2)
+                                Image(systemName: "person.2")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, Spacing.xs)
+                        
+                        // Interactive circles
+                        AttributionCirclesView(
+                            similarityValue: $viewModel.similarityValue,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
+                            // Status display
+                            VStack(spacing: Spacing.xs) {
+                                // Similarity label
+                                Text(viewModel.similarityLabel)
+                                    .font(.system(size: isLandscape ? 22 : 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(similarityGradient)
+                                    .contentTransition(.interpolate)
+                                    .animation(.spring(response: 0.3), value: viewModel.similarityLabel)
+                                
+                                // Description
+                                Text(viewModel.similarityDescription)
+                                    .font(Typography.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .animation(.easeInOut(duration: 0.2), value: viewModel.similarityDescription)
                             }
                             
-                            // Exit button
+                            // Slider control
+                            similaritySlider
+                                .padding(.horizontal, Spacing.lg)
+                            
+                            // Measurement counter
+                            if viewModel.measurementCount > 0 {
+                                Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color(hex: "FAB1A0"))
+                            }
+                            
+                            // Action buttons
+                            HStack(spacing: Spacing.sm) {
+                                // Save button
+                                Button {
+                                    viewModel.saveMeasurement()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Save")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(ColorPalette.primaryButtonGradient)
+                                    .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                }
+                                
+                                // Exit button
                             Button {
                                 viewModel.requestExit()
                             } label: {
@@ -136,7 +138,9 @@ struct AttributionView: View {
                         .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
-                }
+                } // End VStack
+                .frame(minHeight: geometry.size.height)
+                } // End ScrollView
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

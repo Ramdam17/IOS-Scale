@@ -18,106 +18,108 @@ struct ObservationView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.55 : geometry.size.height * 0.45
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Question header
-                    VStack(spacing: Spacing.xs) {
-                        Text("Am I observing or participating?")
-                            .font(Typography.title3)
-                            .fontWeight(.medium)
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Drag right to participate, left to observe")
-                            .font(Typography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.md)
-                    .padding(.horizontal, Spacing.md)
-                    
-                    // Mode indicator icons
-                    HStack(spacing: Spacing.lg) {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "eye")
-                                .font(.caption)
-                            Text("Observer")
-                                .font(Typography.caption2)
-                        }
-                        .foregroundStyle(.secondary)
-                        
-                        Image(systemName: "arrow.left.arrow.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                        
-                        HStack(spacing: Spacing.xs) {
-                            Text("Participant")
-                                .font(Typography.caption2)
-                            Image(systemName: "figure.walk")
-                                .font(.caption)
-                        }
-                        .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.xs)
-                    
-                    // Interactive circles
-                    ObservationCirclesView(
-                        participationValue: $viewModel.participationValue,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.45)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
-                        // Status display
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Question header
                         VStack(spacing: Spacing.xs) {
-                            // Observation label
-                            Text(viewModel.observationLabel)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(observationGradient)
-                                .contentTransition(.interpolate)
-                                .animation(.spring(response: 0.3), value: viewModel.observationLabel)
-                            
-                            // Description
-                            Text(viewModel.observationDescription)
-                                .font(Typography.body)
-                                .foregroundStyle(.secondary)
+                            Text("Am I observing or participating?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
                                 .multilineTextAlignment(.center)
-                                .animation(.easeInOut(duration: 0.2), value: viewModel.observationDescription)
-                        }
-                        
-                        // Slider control
-                        observationSlider
-                            .padding(.horizontal, Spacing.lg)
-                        
-                        // Measurement counter
-                        if viewModel.measurementCount > 0 {
-                            Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                            
+                            Text("Drag right to participate, left to observe")
                                 .font(Typography.caption)
-                                .foregroundStyle(Color(hex: "81ECEC"))
+                                .foregroundStyle(.secondary)
                         }
+                        .padding(.top, Spacing.md)
+                        .padding(.horizontal, Spacing.md)
                         
-                        // Action buttons
-                        HStack(spacing: Spacing.sm) {
-                            // Save button
-                            Button {
-                                viewModel.saveMeasurement()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
-                                }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                        // Mode indicator icons
+                        HStack(spacing: Spacing.lg) {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "eye")
+                                    .font(.caption)
+                                Text("Observer")
+                                    .font(Typography.caption2)
+                            }
+                            .foregroundStyle(.secondary)
+                            
+                            Image(systemName: "arrow.left.arrow.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                            
+                            HStack(spacing: Spacing.xs) {
+                                Text("Participant")
+                                    .font(Typography.caption2)
+                                Image(systemName: "figure.walk")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, Spacing.xs)
+                        
+                        // Interactive circles
+                        ObservationCirclesView(
+                            participationValue: $viewModel.participationValue,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
+                            // Status display
+                            VStack(spacing: Spacing.xs) {
+                                // Observation label
+                                Text(viewModel.observationLabel)
+                                    .font(.system(size: isLandscape ? 22 : 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(observationGradient)
+                                    .contentTransition(.interpolate)
+                                    .animation(.spring(response: 0.3), value: viewModel.observationLabel)
+                                
+                                // Description
+                                Text(viewModel.observationDescription)
+                                    .font(Typography.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .animation(.easeInOut(duration: 0.2), value: viewModel.observationDescription)
                             }
                             
-                            // Exit button
+                            // Slider control
+                            observationSlider
+                                .padding(.horizontal, Spacing.lg)
+                            
+                            // Measurement counter
+                            if viewModel.measurementCount > 0 {
+                                Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color(hex: "81ECEC"))
+                            }
+                            
+                            // Action buttons
+                            HStack(spacing: Spacing.sm) {
+                                // Save button
+                                Button {
+                                    viewModel.saveMeasurement()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Save")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(ColorPalette.primaryButtonGradient)
+                                    .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                }
+                                
+                                // Exit button
                             Button {
                                 viewModel.requestExit()
                             } label: {
@@ -137,6 +139,8 @@ struct ObservationView: View {
                     }
                     .padding(.bottom, Spacing.xl)
                 }
+                .frame(minHeight: geometry.size.height)
+            }
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

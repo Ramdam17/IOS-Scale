@@ -18,86 +18,88 @@ struct SetMembershipView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.55 : geometry.size.height * 0.45
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Question header
-                    VStack(spacing: Spacing.xs) {
-                        Text("Do we belong to the same set?")
-                            .font(Typography.title3)
-                            .fontWeight(.medium)
-                        
-                        Text("Drag circles into or out of the set")
-                            .font(Typography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.md)
-                    
-                    // Interactive circles with set
-                    SetMembershipCirclesView(
-                        selfInSet: $viewModel.selfInSet,
-                        otherInSet: $viewModel.otherInSet,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.45)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
-                        // Status display
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Question header
                         VStack(spacing: Spacing.xs) {
-                            // Membership state
-                            Text(viewModel.membershipLabel)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(membershipGradient)
-                                .contentTransition(.interpolate)
-                                .animation(.spring(response: 0.3), value: viewModel.membershipLabel)
+                            Text("Do we belong to the same set?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
                             
-                            // Description
-                            Text(viewModel.membershipDescription)
-                                .font(Typography.body)
-                                .foregroundStyle(.secondary)
-                                .animation(.easeInOut(duration: 0.2), value: viewModel.membershipDescription)
-                        }
-                        
-                        // Visual membership indicator
-                        membershipIndicator
-                            .padding(.horizontal, Spacing.lg)
-                        
-                        // Measurement counter
-                        if viewModel.measurementCount > 0 {
-                            Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                            Text("Drag circles into or out of the set")
                                 .font(Typography.caption)
-                                .foregroundStyle(Color(hex: "FFD700"))
+                                .foregroundStyle(.secondary)
                         }
+                        .padding(.top, Spacing.md)
                         
-                        // Action buttons
-                        HStack(spacing: Spacing.sm) {
-                            // Save button
-                            Button {
-                                viewModel.saveMeasurement()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
-                                }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                        // Interactive circles with set
+                        SetMembershipCirclesView(
+                            selfInSet: $viewModel.selfInSet,
+                            otherInSet: $viewModel.otherInSet,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
+                            // Status display
+                            VStack(spacing: Spacing.xs) {
+                                // Membership state
+                                Text(viewModel.membershipLabel)
+                                    .font(.system(size: isLandscape ? 22 : 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(membershipGradient)
+                                    .contentTransition(.interpolate)
+                                    .animation(.spring(response: 0.3), value: viewModel.membershipLabel)
+                                
+                                // Description
+                                Text(viewModel.membershipDescription)
+                                    .font(Typography.body)
+                                    .foregroundStyle(.secondary)
+                                    .animation(.easeInOut(duration: 0.2), value: viewModel.membershipDescription)
                             }
                             
-                            // Exit button
-                            Button {
-                                viewModel.requestExit()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "xmark.circle.fill")
-                                    Text("Exit")
+                            // Visual membership indicator
+                            membershipIndicator
+                                .padding(.horizontal, Spacing.lg)
+                            
+                            // Measurement counter
+                            if viewModel.measurementCount > 0 {
+                                Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color(hex: "FFD700"))
+                            }
+                            
+                            // Action buttons
+                            HStack(spacing: Spacing.sm) {
+                                // Save button
+                                Button {
+                                    viewModel.saveMeasurement()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Save")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(ColorPalette.primaryButtonGradient)
+                                    .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                }
+                                
+                                // Exit button
+                                Button {
+                                    viewModel.requestExit()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "xmark.circle.fill")
+                                        Text("Exit")
                                 }
                                 .font(Typography.headline)
                                 .foregroundStyle(.secondary)
@@ -110,7 +112,9 @@ struct SetMembershipView: View {
                         .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
-                }
+                } // End VStack
+                .frame(minHeight: geometry.size.height)
+                } // End ScrollView
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

@@ -16,91 +16,93 @@ struct AdvancedIOSView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.45
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Circles area
-                    InteractiveCirclesView(
-                        overlapValue: $viewModel.overlapValue,
-                        selfScale: $viewModel.selfScale,
-                        otherScale: $viewModel.otherScale,
-                        scalingEnabled: true,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.45)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.sm) {
-                        // Status labels
-                        VStack(spacing: Spacing.xxs) {
-                            Text(viewModel.overlapLabel)
-                                .font(Typography.title3)
-                                .foregroundStyle(.secondary)
-                            
-                            Text(viewModel.scaleRatioText)
-                                .font(Typography.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                        .animation(.easeInOut(duration: 0.2), value: viewModel.overlapLabel)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Circles area
+                        InteractiveCirclesView(
+                            overlapValue: $viewModel.overlapValue,
+                            selfScale: $viewModel.selfScale,
+                            otherScale: $viewModel.otherScale,
+                            scalingEnabled: true,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
                         
-                        // Overlap slider
-                        VStack(spacing: Spacing.xs) {
-                            IOSSlider(value: $viewModel.overlapValue)
-                            
-                            HStack {
-                                Text("Distant")
-                                    .font(Typography.caption)
-                                    .foregroundStyle(.tertiary)
-                                Spacer()
-                                Text("Merged")
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.xs : Spacing.sm) {
+                            // Status labels
+                            VStack(spacing: Spacing.xxs) {
+                                Text(viewModel.overlapLabel)
+                                    .font(Typography.title3)
+                                    .foregroundStyle(.secondary)
+                                
+                                Text(viewModel.scaleRatioText)
                                     .font(Typography.caption)
                                     .foregroundStyle(.tertiary)
                             }
-                        }
-                        .padding(.horizontal, Spacing.lg)
-                        
-                        // Scale sliders
-                        VStack(spacing: Spacing.xs) {
-                            // Self scale
-                            HStack(spacing: Spacing.sm) {
-                                Text("Self")
-                                    .font(Typography.caption)
-                                    .foregroundStyle(ColorPalette.selfCircleCore)
-                                    .frame(width: 50, alignment: .leading)
-                                
-                                IOSSlider(
-                                    value: $viewModel.selfScale,
-                                    range: LayoutConstants.minCircleScale...LayoutConstants.maxCircleScale
-                                )
-                                
-                                Text("\(viewModel.selfScale, specifier: "%.1f")×")
-                                    .font(Typography.caption)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 40, alignment: .trailing)
-                            }
+                            .animation(.easeInOut(duration: 0.2), value: viewModel.overlapLabel)
                             
-                            // Other scale
-                            HStack(spacing: Spacing.sm) {
-                                Text("Other")
-                                    .font(Typography.caption)
-                                    .foregroundStyle(ColorPalette.otherCircleCore)
-                                    .frame(width: 50, alignment: .leading)
+                            // Overlap slider
+                            VStack(spacing: Spacing.xs) {
+                                IOSSlider(value: $viewModel.overlapValue)
                                 
-                                IOSSlider(
-                                    value: $viewModel.otherScale,
-                                    range: LayoutConstants.minCircleScale...LayoutConstants.maxCircleScale
-                                )
-                                
-                                Text("\(viewModel.otherScale, specifier: "%.1f")×")
-                                    .font(Typography.caption)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 40, alignment: .trailing)
+                                HStack {
+                                    Text("Distant")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(.tertiary)
+                                    Spacer()
+                                    Text("Merged")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
                             }
-                        }
-                        .padding(.horizontal, Spacing.lg)
+                            .padding(.horizontal, Spacing.lg)
+                            
+                            // Scale sliders
+                            VStack(spacing: Spacing.xs) {
+                                // Self scale
+                                HStack(spacing: Spacing.sm) {
+                                    Text("Self")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(ColorPalette.selfCircleCore)
+                                        .frame(width: 50, alignment: .leading)
+                                    
+                                    IOSSlider(
+                                        value: $viewModel.selfScale,
+                                        range: LayoutConstants.minCircleScale...LayoutConstants.maxCircleScale
+                                    )
+                                    
+                                    Text("\(viewModel.selfScale, specifier: "%.1f")×")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 40, alignment: .trailing)
+                                }
+                                
+                                // Other scale
+                                HStack(spacing: Spacing.sm) {
+                                    Text("Other")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(ColorPalette.otherCircleCore)
+                                        .frame(width: 50, alignment: .leading)
+                                    
+                                    IOSSlider(
+                                        value: $viewModel.otherScale,
+                                        range: LayoutConstants.minCircleScale...LayoutConstants.maxCircleScale
+                                    )
+                                    
+                                    Text("\(viewModel.otherScale, specifier: "%.1f")×")
+                                        .font(Typography.caption)
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 40, alignment: .trailing)
+                                }
+                            }
+                            .padding(.horizontal, Spacing.lg)
                         
                         // Measurement counter
                         if viewModel.measurementCount > 0 {
@@ -163,7 +165,9 @@ struct AdvancedIOSView: View {
                         .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
-                }
+                } // End VStack
+                .frame(minHeight: geometry.size.height)
+                } // End ScrollView
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

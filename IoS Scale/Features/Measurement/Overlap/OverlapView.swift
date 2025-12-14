@@ -18,86 +18,88 @@ struct OverlapView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.55 : geometry.size.height * 0.45
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Question header
-                    VStack(spacing: Spacing.xs) {
-                        Text("How much do we share?")
-                            .font(Typography.title3)
-                            .fontWeight(.medium)
-                        
-                        Text("Drag vertically to adjust overlap")
-                            .font(Typography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.md)
-                    
-                    // Interactive circles with overlap highlight
-                    OverlapCirclesView(
-                        overlapValue: $viewModel.overlapValue,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.45)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
-                        // Status display
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Question header
                         VStack(spacing: Spacing.xs) {
-                            // Overlap percentage
-                            Text(viewModel.overlapPercentage)
-                                .font(.system(size: 36, weight: .bold, design: .rounded))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hex: "FFD700"),
-                                            Color(hex: "FFA500")
-                                        ],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .contentTransition(.numericText())
-                                .animation(.spring(response: 0.3), value: viewModel.overlapValue)
+                            Text("How much do we share?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
                             
-                            // Overlap label
-                            Text(viewModel.overlapLabel)
-                                .font(Typography.body)
+                            Text("Drag vertically to adjust overlap")
+                                .font(Typography.caption)
                                 .foregroundStyle(.secondary)
-                                .animation(.easeInOut(duration: 0.2), value: viewModel.overlapLabel)
                         }
+                        .padding(.top, Spacing.md)
                         
-                        // Slider
-                        IOSSlider(value: $viewModel.overlapValue)
+                        // Interactive circles with overlap highlight
+                        OverlapCirclesView(
+                            overlapValue: $viewModel.overlapValue,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
+                            // Status display
+                            VStack(spacing: Spacing.xs) {
+                                // Overlap percentage
+                                Text(viewModel.overlapPercentage)
+                                    .font(.system(size: isLandscape ? 28 : 36, weight: .bold, design: .rounded))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "FFD700"),
+                                                Color(hex: "FFA500")
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .contentTransition(.numericText())
+                                    .animation(.spring(response: 0.3), value: viewModel.overlapValue)
+                                
+                                // Overlap label
+                                Text(viewModel.overlapLabel)
+                                    .font(Typography.body)
+                                    .foregroundStyle(.secondary)
+                                    .animation(.easeInOut(duration: 0.2), value: viewModel.overlapLabel)
+                            }
+                            
+                            // Slider
+                            IOSSlider(value: $viewModel.overlapValue)
+                                .padding(.horizontal, Spacing.lg)
+                            
+                            // Labels under slider
+                            HStack {
+                                Text("No Overlap")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(.tertiary)
+                                Spacer()
+                                Text("Complete")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
                             .padding(.horizontal, Spacing.lg)
-                        
-                        // Labels under slider
-                        HStack {
-                            Text("No Overlap")
-                                .font(Typography.caption)
-                                .foregroundStyle(.tertiary)
-                            Spacer()
-                            Text("Complete")
-                                .font(Typography.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                        .padding(.horizontal, Spacing.lg)
-                        
-                        // Measurement counter
-                        if viewModel.measurementCount > 0 {
-                            Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
-                                .font(Typography.caption)
-                                .foregroundStyle(Color(hex: "FFD700"))
-                        }
-                        
-                        // Action buttons
-                        HStack(spacing: Spacing.sm) {
-                            // Save button
-                            Button {
-                                viewModel.saveMeasurement()
+                            
+                            // Measurement counter
+                            if viewModel.measurementCount > 0 {
+                                Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color(hex: "FFD700"))
+                            }
+                            
+                            // Action buttons
+                            HStack(spacing: Spacing.sm) {
+                                // Save button
+                                Button {
+                                    viewModel.saveMeasurement()
                             } label: {
                                 HStack {
                                     Image(systemName: "checkmark.circle.fill")
@@ -134,7 +136,9 @@ struct OverlapView: View {
                         .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
-                }
+                } // End VStack
+                .frame(minHeight: geometry.size.height)
+                } // End ScrollView
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

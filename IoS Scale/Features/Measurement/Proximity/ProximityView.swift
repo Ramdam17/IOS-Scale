@@ -18,86 +18,88 @@ struct ProximityView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+            let circlesHeight = isLandscape ? geometry.size.height * 0.50 : geometry.size.height * 0.40
+            
             ZStack {
-                VStack(spacing: 0) {
-                    // Question header
-                    VStack(spacing: Spacing.xs) {
-                        Text("How close do I feel to the other?")
-                            .font(Typography.title3)
-                            .fontWeight(.medium)
-                        
-                        Text("Drag circles closer or further apart")
-                            .font(Typography.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.top, Spacing.md)
-                    
-                    // Interactive circles with connecting line
-                    ProximityCirclesView(
-                        proximityValue: $viewModel.proximityValue,
-                        onDraggingChanged: { isDragging in
-                            viewModel.isDragging = isDragging
-                        }
-                    )
-                    .frame(height: geometry.size.height * 0.40)
-                    
-                    Spacer()
-                    
-                    // Bottom controls
-                    VStack(spacing: Spacing.md) {
-                        // Status display
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: isLandscape ? Spacing.xs : 0) {
+                        // Question header
                         VStack(spacing: Spacing.xs) {
-                            // Proximity label
-                            Text(viewModel.proximityLabel)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(proximityGradient)
-                                .contentTransition(.interpolate)
-                                .animation(.spring(response: 0.3), value: viewModel.proximityLabel)
+                            Text("How close do I feel to the other?")
+                                .font(Typography.title3)
+                                .fontWeight(.medium)
                             
-                            // Description
-                            Text(viewModel.proximityDescription)
-                                .font(Typography.body)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                                .animation(.easeInOut(duration: 0.2), value: viewModel.proximityDescription)
-                        }
-                        
-                        // Visual proximity slider (read-only visual feedback)
-                        proximityIndicator
-                            .padding(.horizontal, Spacing.lg)
-                        
-                        // Measurement counter
-                        if viewModel.measurementCount > 0 {
-                            Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                            Text("Drag circles closer or further apart")
                                 .font(Typography.caption)
-                                .foregroundStyle(Color(hex: "FFD700"))
+                                .foregroundStyle(.secondary)
                         }
+                        .padding(.top, Spacing.md)
                         
-                        // Action buttons
-                        HStack(spacing: Spacing.sm) {
-                            // Save button
-                            Button {
-                                viewModel.saveMeasurement()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Save")
-                                }
-                                .font(Typography.headline)
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(ColorPalette.primaryButtonGradient)
-                                .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                        // Interactive circles with connecting line
+                        ProximityCirclesView(
+                            proximityValue: $viewModel.proximityValue,
+                            onDraggingChanged: { isDragging in
+                                viewModel.isDragging = isDragging
+                            }
+                        )
+                        .frame(height: circlesHeight)
+                        
+                        // Bottom controls
+                        VStack(spacing: isLandscape ? Spacing.sm : Spacing.md) {
+                            // Status display
+                            VStack(spacing: Spacing.xs) {
+                                // Proximity label
+                                Text(viewModel.proximityLabel)
+                                    .font(.system(size: isLandscape ? 22 : 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(proximityGradient)
+                                    .contentTransition(.interpolate)
+                                    .animation(.spring(response: 0.3), value: viewModel.proximityLabel)
+                                
+                                // Description
+                                Text(viewModel.proximityDescription)
+                                    .font(Typography.body)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .animation(.easeInOut(duration: 0.2), value: viewModel.proximityDescription)
                             }
                             
-                            // Exit button
-                            Button {
-                                viewModel.requestExit()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "xmark.circle.fill")
-                                    Text("Exit")
+                            // Visual proximity slider (read-only visual feedback)
+                            proximityIndicator
+                                .padding(.horizontal, Spacing.lg)
+                            
+                            // Measurement counter
+                            if viewModel.measurementCount > 0 {
+                                Text("\(viewModel.measurementCount) measurement\(viewModel.measurementCount > 1 ? "s" : "") saved")
+                                    .font(Typography.caption)
+                                    .foregroundStyle(Color(hex: "FFD700"))
+                            }
+                            
+                            // Action buttons
+                            HStack(spacing: Spacing.sm) {
+                                // Save button
+                                Button {
+                                    viewModel.saveMeasurement()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Save")
+                                    }
+                                    .font(Typography.headline)
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(ColorPalette.primaryButtonGradient)
+                                    .clipShape(RoundedRectangle(cornerRadius: LayoutConstants.buttonCornerRadius))
+                                }
+                                
+                                // Exit button
+                                Button {
+                                    viewModel.requestExit()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "xmark.circle.fill")
+                                        Text("Exit")
                                 }
                                 .font(Typography.headline)
                                 .foregroundStyle(.secondary)
@@ -110,7 +112,9 @@ struct ProximityView: View {
                         .padding(.horizontal, Spacing.lg)
                     }
                     .padding(.bottom, Spacing.xl)
-                }
+                } // End VStack
+                .frame(minHeight: geometry.size.height)
+                } // End ScrollView
                 
                 // Save confirmation overlay
                 if viewModel.showSaveConfirmation {

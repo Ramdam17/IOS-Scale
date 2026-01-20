@@ -10,22 +10,9 @@
 		A5EC7CA02ED2F44800A63C13 /* IoS Scale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "IoS Scale.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A5D773832EEF5DBF00E336B2 /* Exceptions for "IoS Scale" folder in "IoS Scale" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"IoS-Scale-Info.plist",
-			);
-			target = A5EC7C9F2ED2F44800A63C13 /* IoS Scale */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A5EC7CA22ED2F44800A63C13 /* IoS Scale */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				A5D773832EEF5DBF00E336B2 /* Exceptions for "IoS Scale" folder in "IoS Scale" target */,
-			);
 			path = "IoS Scale";
 			sourceTree = "<group>";
 		};

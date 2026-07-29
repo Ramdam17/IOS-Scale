@@ -286,7 +286,37 @@ lower scrutiny, better fit; to decide at submission time).
 
 Old code is deleted as new code replaces it; the app stays buildable throughout.
 
-## 15. Out of Scope / Open Items
+## 15. Tooling & Method (reusable across apps)
+
+Scoping rule: **the repo carries the product's norms as documents; personal tooling
+stays personal** ("différentes personnes, différentes méthodes").
+
+- **In the repo (shared, tool-agnostic):** `AGENTS.md` (invariants, build/test
+  commands, doc map), `DESIGN-STANCES.md`, `DATA_DICTIONARY.md`, `CLAUDE.md`
+  (includes AGENTS.md). No executable agent/skill tooling is committed. Shared
+  enforcement that imposes no method: **CI tests** (export contract, engine
+  semantics, Clear All Data).
+- **On Rémy's machine (private plugins):**
+  - Project layer: `stance-reviewer` agent (read-only, mandatory gate before any
+    user-facing feature is "done": valence, data contract, localization, consignes)
+    + a conventions skill (canonical encoding, `position` vocabulary, export rules) —
+    both read the repo's committed documents as their referential (single source of
+    truth; the private tooling enforces the public law).
+  - Global layer, plugin `remy-ios-method`, distilled in phase 4 from this project's
+    experience: `ios-app-lifecycle` (existing-code audit → brainstorm/spec →
+    Figma-first → engine-first tested build → milestone audits → App Store checklist)
+    and `research-instrument-apps` (valence audit, stimulus standardization/canonical
+    space, data provenance/dictionary, participant/PIN/device flows).
+- Roles map: build companion (main session) · stance gate (private agent) ·
+  code review (`swift-reviewer`, global) · specialized audits (Axiom, milestones) ·
+  design (`figma-design-reviewer` + `apple-liquid-glass`) · build/CI (`xcode-build`
+  + GitHub Actions).
+- Lesson from Polysomnia (verified 2026-07-28): the method (doc hierarchy + mandated
+  review gate + Figma-first + tested engine) demonstrably worked; plugin packaging
+  leaks across projects and lives outside the repo — hence: norms committed,
+  tooling private, enforcement shared via CI.
+
+## 16. Out of Scope / Open Items
 
 - **Discrete scale**: never — that is `IoSScaale`'s job (coexistence).
 - **App Store category** (Medical vs Education): decide at submission.

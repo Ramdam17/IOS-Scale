@@ -1,6 +1,6 @@
 # IOS Scale v2 — Rebuild Design
 
-> **Status:** validated section by section with Rémy on 2026-07-28
+> **Status:** validated section by section with Rémy on 2026-07-28 · phase 0 (method & norms) completed on 2026-07-28
 > **Scope:** full rebuild of the app (engine-first, in-repo), v2.0 App Store resubmission
 > **Coexists with:** `IoSScaale` (the frozen discrete-scale study app) — the two apps live in parallel; v2 borrows its research patterns but does NOT include a discrete scale
 

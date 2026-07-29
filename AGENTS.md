@@ -5,7 +5,7 @@ Guide for anyone (human or AI) modifying this repository.
 ## What this is
 
 An iOS/iPadOS research instrument measuring intersubjective experience with 9
-continuous circle-based modalities. Two visual universes (Classic: sober
+circle-based modalities (8 continuous, 1 categorical). Two visual universes (Classic: sober
 research instrument; Rainbow: playful) over one shared measurement engine.
 Currently mid-rebuild (v2): see
 `docs/superpowers/specs/2026-07-28-ios-scale-v2-rebuild-design.md`.

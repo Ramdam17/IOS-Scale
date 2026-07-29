@@ -12,7 +12,7 @@ Every measurement has three parts:
 | Part | Content |
 |---|---|
 | `response` | The configuration the participant produced, in canonical units (base circle radius r₀ = 1). Typed per modality (below). |
-| `position` | A coordinate in [0,1] on the modality's continuum, defined by two neutrally described poles. A coordinate — never a score. |
+| `position` | A coordinate in [0,1] on the modality's continuum, defined by two neutrally described poles. A coordinate — never a score. Absent for categorical modalities (`set_membership`). |
 | `context` | Passation conditions: `style` (classic/rainbow), `shows_value`, `shows_labels`, `celebrations`, `language`, `start_value`, `reset_behavior`, `duration_ms`, `device_model`, `orientation`, `window_width_pt`, `window_height_pt`, `points_per_unit`, `app_version`, `schema_version`, `instrument_version`. |
 
 Rendering convention (stance 5): fixed-diameter circles; uniform scaling to the
@@ -63,7 +63,13 @@ constants (`D_max`, …) versioned under `instrument_version`.
 
 The exact CSV column list is frozen in phase 2 together with the payloads;
 it will enumerate: session fields, measurement identity fields, per-modality
-payload columns, and every `context` field listed above.
+payload columns, and every `context` field listed above. Payload columns are
+**prefixed by modality** at CSV flattening (e.g. `proximity_self_position` vs
+`set_membership_self_position`) — identical short names never carry
+modality-dependent meanings in the same column.
+
+Trash policy is format-independent: **all export formats (JSON included)
+exclude trashed sessions.**
 
 ## Changelog
 

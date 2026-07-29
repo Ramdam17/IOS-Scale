@@ -55,8 +55,10 @@ makes every convention recomputable and every future re-scoring possible.
 - Domain constraints live in the manipulandum's geometry. Out-of-domain values
   are loud errors — never silent clamps (v1's Set Membership 0–3-clamped-to-1
   corruption is the cautionary tale).
-- Set Membership stores an explicit category (`neither/selfOnly/otherOnly/both`);
-  no continuous score is fabricated from it.
+- Set Membership stores an explicit category
+  (`neither/self_only/other_only/both`, spelled here in its serialized form);
+  no continuous score is fabricated from it, and categorical modalities have
+  no `position`.
 - Derivable formulas (overlap proportion, distance norms…) are documented in
   `docs/DATA_DICTIONARY.md`, not baked into the app.
 
@@ -143,7 +145,9 @@ responses. The researcher owns the correspondence table; the app never holds
 identity. v1's mandatory Sign in with Apple served no function and was rejected
 by App Review (Guideline 5.1.1) — the account concept is removed, not fixed.
 
-**Consequences.** Participant codes are free-form, in-memory, reset at launch;
+**Consequences.** Participant codes are free-form; the *active* code is held
+in memory only and reset at launch (a code is stamped onto the sessions it
+labels — that stamp is the only persistence);
 device identity is a device label, not a person; PIN gates data zones
 (Settings, History, Export), not measurement; "Clear All Data" actually deletes
 everything, verified by tests.

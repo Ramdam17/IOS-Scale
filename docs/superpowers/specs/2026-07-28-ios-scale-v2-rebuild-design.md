@@ -232,8 +232,28 @@ Mechanisms found in v1 and their replacements:
 
 **Removed:** SIWA (service + both duplicate button wrappers), `LockScreenView` +
 `.locked` state + `lockApp()` vestiges, `AppRouter`, `Settings.bundle`,
-decimal-separator setting, Catalyst/Vision Pro targets (device family 1,2),
-push entitlement, the dead value-type `Session`/`Measurement` layer, `AppSettings`.
+decimal-separator setting, Catalyst (native macOS destination instead — see
+Platforms below), push entitlement, the dead value-type `Session`/`Measurement`
+layer, `AppSettings`.
+
+### Platforms & display constraint (added 2026-07-28, validated with Rémy)
+
+- **Destinations:** iPhone, iPad, **macOS native (SwiftUI destination — no
+  Catalyst, Apple Silicon only)**, and **Apple Vision Pro via Designed-for-iPad
+  compatibility** (device family 1,2 + vision compatibility). A native visionOS
+  destination is a possible post-v2 milestone; the compatibility mode is the
+  supported path for v2.
+- **Distribution:** one app record (universal purchase). The iOS/iPadOS binary
+  serves iPhone, iPad, and Vision Pro (compatibility); macOS ships as its own
+  platform build. TestFlight on all four.
+- **No-scroll constraint: measurement screens never scroll.** On every device
+  and orientation — iPhone portrait AND landscape included — the full stimulus
+  and its controls fit one viewport: canonical-space visualization uniformly
+  scaled, compact chrome that reorganizes in landscape (controls beside the
+  stimulus, not below it). This replaces v1's ScrollView approach (sprints
+  18-19). Mac and visionOS windows enforce a minimum size; `points_per_unit`
+  in the measurement context already records the resulting stimulus scale as
+  a covariate.
 
 ## 10. Localization
 
@@ -279,7 +299,7 @@ lower scrutiny, better fit; to decide at submission time).
 | Phase | Content |
 |---|---|
 | 0 | **Method & norms first** (the referential must exist before the artifacts it judges): `DESIGN-STANCES.md`, `AGENTS.md` v1, `DATA_DICTIONARY.md` skeleton committed; private tooling installed (stance-reviewer gate agent + project conventions skill, reading the committed documents) |
-| 1 | **Figma**, governed by the stances: design-system file with 4-mode variables (Classic/Rainbow × Light/Dark), components (card, symmetric slider, circles, buttons, participant chip), key screens in both universes (Home, 2-3 measurement screens, Settings, History, Onboarding); review pass (figma-design-reviewer + apple-liquid-glass + stance gate). Classic is *designed and validated here* before any SwiftUI |
+| 1 | **Figma**, governed by the stances: design-system file with 4-mode variables (Classic/Rainbow × Light/Dark), components (card, symmetric slider, circles, buttons, participant chip), key screens in both universes (Home, 2-3 measurement screens, Settings, History, Onboarding) **and per form factor: iPhone portrait AND landscape (no-scroll), iPad, Mac window**; review pass (figma-design-reviewer + apple-liquid-glass + stance gate). Classic is *designed and validated here* before any SwiftUI |
 | 2 | Tested core, no UI: Theme, canonical geometry + 9 `ModalityConfig`s, data model v2, engine, export; CI bootstrap (build + tests on PR) |
 | 3 | Generic measurement screen + Home + Settings |
 | 4 | History, Export, Onboarding, research flow (participant, PIN), FR/EN |

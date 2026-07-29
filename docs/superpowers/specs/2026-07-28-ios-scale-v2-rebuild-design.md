@@ -278,11 +278,12 @@ lower scrutiny, better fit; to decide at submission time).
 
 | Phase | Content |
 |---|---|
-| 0 | This spec → **Figma**: design-system file with 4-mode variables (Classic/Rainbow × Light/Dark), components (card, symmetric slider, circles, buttons, participant chip), key screens in both universes (Home, 2-3 measurement screens, Settings, History, Onboarding); review pass (figma-design-reviewer + apple-liquid-glass). Classic is *designed and validated here* before any SwiftUI |
-| 1 | Tested core, no UI: Theme, canonical geometry + 9 `ModalityConfig`s, data model v2, engine, export |
-| 2 | Generic measurement screen + Home + Settings |
-| 3 | History, Export, Onboarding, research flow (participant, PIN), FR/EN |
-| 4 | Legacy purge, governance files, final audits (Axiom re-run), resubmission |
+| 0 | **Method & norms first** (the referential must exist before the artifacts it judges): `DESIGN-STANCES.md`, `AGENTS.md` v1, `DATA_DICTIONARY.md` skeleton committed; private tooling installed (stance-reviewer gate agent + project conventions skill, reading the committed documents) |
+| 1 | **Figma**, governed by the stances: design-system file with 4-mode variables (Classic/Rainbow × Light/Dark), components (card, symmetric slider, circles, buttons, participant chip), key screens in both universes (Home, 2-3 measurement screens, Settings, History, Onboarding); review pass (figma-design-reviewer + apple-liquid-glass + stance gate). Classic is *designed and validated here* before any SwiftUI |
+| 2 | Tested core, no UI: Theme, canonical geometry + 9 `ModalityConfig`s, data model v2, engine, export; CI bootstrap (build + tests on PR) |
+| 3 | Generic measurement screen + Home + Settings |
+| 4 | History, Export, Onboarding, research flow (participant, PIN), FR/EN |
+| 5 | Legacy purge, final audits (Axiom re-run), `remy-ios-method` distillation (global method skills, written from this project's experience), resubmission |
 
 Old code is deleted as new code replaces it; the app stays buildable throughout.
 
@@ -302,8 +303,8 @@ stays personal** ("différentes personnes, différentes méthodes").
     + a conventions skill (canonical encoding, `position` vocabulary, export rules) —
     both read the repo's committed documents as their referential (single source of
     truth; the private tooling enforces the public law).
-  - Global layer, plugin `remy-ios-method`, distilled in phase 4 from this project's
-    experience: `ios-app-lifecycle` (existing-code audit → brainstorm/spec →
+  - Global layer, plugin `remy-ios-method`, distilled in phase 5 from this project's
+    experience (a method is generalized after being proven once, not before): `ios-app-lifecycle` (existing-code audit → brainstorm/spec →
     Figma-first → engine-first tested build → milestone audits → App Store checklist)
     and `research-instrument-apps` (valence audit, stimulus standardization/canonical
     space, data provenance/dictionary, participant/PIN/device flows).

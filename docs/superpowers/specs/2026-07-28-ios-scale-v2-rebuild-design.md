@@ -1,6 +1,6 @@
 # IOS Scale v2 — Rebuild Design
 
-> **Status:** validated section by section with Rémy on 2026-07-28 · phase 0 (method & norms) completed on 2026-07-28
+> **Status:** validated section by section with Rémy on 2026-07-28 · phase 0 (method & norms) completed on 2026-07-28 · phase 1 (Figma) completed on 2026-07-30
 > **Scope:** full rebuild of the app (engine-first, in-repo), v2.0 App Store resubmission
 > **Coexists with:** `IoSScaale` (the frozen discrete-scale study app) — the two apps live in parallel; v2 borrows its research patterns but does NOT include a discrete scale
 
@@ -299,7 +299,7 @@ lower scrutiny, better fit; to decide at submission time).
 | Phase | Content |
 |---|---|
 | 0 | **Method & norms first** (the referential must exist before the artifacts it judges): `DESIGN-STANCES.md`, `AGENTS.md` v1, `DATA_DICTIONARY.md` skeleton committed; private tooling installed (stance-reviewer gate agent + project conventions skill, reading the committed documents) |
-| 1 | **Figma**, governed by the stances: design-system file with 4-mode variables (Classic/Rainbow × Light/Dark), components (card, symmetric slider, circles, buttons, participant chip), key screens in both universes (Home, 2-3 measurement screens, Settings, History, Onboarding) **and per form factor: iPhone portrait AND landscape (no-scroll), iPad, Mac window**; review pass (figma-design-reviewer + apple-liquid-glass + stance gate). Classic is *designed and validated here* before any SwiftUI |
+| 1 | **Figma**, governed by the stances: design-system file with 4-mode variables (Classic/Rainbow × Light/Dark), components (card, symmetric slider, circles, buttons, participant chip), key screens in both universes (Home, 2-3 measurement screens, Settings, History, Onboarding) **and per form factor: iPhone portrait AND landscape (no-scroll), iPad, Mac window**; review pass (figma-design-reviewer + apple-liquid-glass + stance gate). Classic is *designed and validated here* before any SwiftUI. ✅ **Completed 2026-07-30** — file: https://www.figma.com/design/hNWYGtMXDiqAYNDEsoWdqX (56 frames incl. FR, Dynamic Type XL, pole states, dark counterparts, Mac chrome; gates ran, majors fixed, stance amendment v1.1; JALON 4 validated). Execution state: `../plans/2026-07-29-phase-1-figma-STATE.md` |
 | 2 | Tested core, no UI: Theme, canonical geometry + 9 `ModalityConfig`s, data model v2, engine, export; CI bootstrap (build + tests on PR) |
 | 3 | Generic measurement screen + Home + Settings |
 | 4 | History, Export, Onboarding, research flow (participant, PIN), FR/EN |

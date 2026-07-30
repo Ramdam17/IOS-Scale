@@ -13,11 +13,23 @@ Every measurement has three parts:
 |---|---|
 | `response` | The configuration the participant produced, in canonical units (base circle radius r₀ = 1). Typed per modality (below). |
 | `position` | A coordinate in [0,1] on the modality's continuum, defined by two neutrally described poles. A coordinate — never a score. Absent for categorical modalities (`set_membership`). |
-| `context` | Passation conditions: `style` (classic/rainbow), `shows_value`, `shows_labels`, `celebrations`, `language`, `start_value`, `reset_behavior`, `duration_ms`, `device_model`, `orientation`, `window_width_pt`, `window_height_pt`, `points_per_unit`, `app_version`, `schema_version`, `instrument_version`. |
+| `context` | Passation conditions: `style` (classic/rainbow), `color_scheme` (light/dark — the resolved appearance in effect, never the "System" setting), `shows_value`, `shows_labels`, `celebrations`, `language`, `start_value`, `reset_behavior`, `duration_ms`, `device_model`, `orientation`, `window_width_pt`, `window_height_pt`, `points_per_unit`, `app_version`, `schema_version`, `instrument_version`. |
 
 Rendering convention (stance 5): fixed-diameter circles; uniform scaling to the
 window; manipulable domain = full separation → concentric; per-modality
 constants (`D_max`, …) versioned under `instrument_version`.
+
+Circle role fills are appearance-dependent by convention: each role (Self,
+Other) keeps a fixed named color per `style` × `color_scheme` combination, and
+in Classic the Self/Other *relative luminance inverts* between light and dark
+(Self is the darker circle in light mode, the lighter one in dark mode).
+Neither role is visually privileged in any combination. This convention — the
+exact role-color table — is part of the instrument and is versioned under
+`instrument_version`; the resolved `color_scheme` recorded in `context`
+identifies which rendering the participant saw. When both circles overlap, the
+top circle's fill is opaque (the occluded circle is hidden where they
+intersect); the drawing order is fixed per modality and versioned under
+`instrument_version`.
 
 ## Per-modality response payloads (canonical units)
 

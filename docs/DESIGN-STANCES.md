@@ -1,6 +1,6 @@
 # Design Stances — IOS Scale
 
-> Normative document. Version 1.0 (2026-07-28).
+> Normative document. Version 1.1 (2026-07-30).
 > Every stance ends with **Violations** — concrete changes that would break it.
 > A pull request that contradicts a stance must propose a stance amendment
 > (new version of this file), not slip the change through.
@@ -76,9 +76,10 @@ recorded in each measurement's context.
 the same measurement as one given without it. If display conditions are not in
 the data, they are confounds in the researcher's memory.
 
-**Consequences.** Each measurement records: active style, the three feedback
-toggles, language, start value + reset behavior, measurement duration, device
-model, orientation, window size, points-per-unit, `app_version`,
+**Consequences.** Each measurement records: active style, resolved color
+scheme (light/dark — the value in effect, not the "System" setting), the three
+feedback toggles, language, start value + reset behavior, measurement duration,
+device model, orientation, window size, points-per-unit, `app_version`,
 `schema_version`, `instrument_version`.
 
 **Violations.** Adding a visible feedback element without adding it to the
@@ -161,3 +162,16 @@ CloudKit records behind.
 Stances change by amending this file (new version number, dated changelog
 entry, rationale for the change) in a dedicated commit — never as a side effect
 of a feature PR.
+
+## Changelog
+
+- **1.1 (2026-07-30)** — Stance 3: added *resolved color scheme* to the
+  recorded passation conditions. Rationale: the phase-1 design gate showed that
+  light/dark appearance is user-switchable on measurement screens and alters
+  the stimulus (in Classic, the Self/Other relative luminance inverts between
+  modes) — a rendering circumstance at least as response-shaping as
+  orientation or window size, which were already recorded. Companion change:
+  `color_scheme` added to the `context` in `DATA_DICTIONARY.md` (still DRAFT,
+  pre-freeze), and the per-appearance circle fill convention documented there
+  under `instrument_version`.
+- **1.0 (2026-07-28)** — Initial version.

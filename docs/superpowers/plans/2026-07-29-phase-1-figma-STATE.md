@@ -39,13 +39,42 @@
    mutated: no glass materials (measurement screens are no-scroll/content-first = "Clear";
    system chrome supplies glass in code) and Unicode glyphs standing in for SF Symbols
    (info.circle, gearshape, trash, chevron.up/down — annotate in phase 3).
-4. ⬜ JALON 4 (Rémy): arbitrations listed in the JALON 4 synthesis (conversation 2026-07-30):
-   color_scheme BLOCK; Classic Self/Other fill convention across modes; typography drift
-   (12 off-ramp combos vs SwiftUI ramp); spacing/radius not bound to Layout vars (values 5/6/
-   10/999 off token scale); coverage additions (FR frames, Dynamic Type XL, extreme-state
-   frames, 9-card Home, dark counterparts, Mac chrome, SF-Symbol icon set, Rainbow button
-   contrast 3.8:1, occlusion convention, InfoSheet TEXT props, History detail, onboarding
-   affordances) — phase-1 addendum vs phase-2/3 deferral per item.
+4. ✅ Rémy arbitrated 2026-07-30 (1: reco / 2: document / 3: consolidate / 4: ok / 5: full
+   scope, no deferral) — **addendum T5b executed same day**:
+   - Normative: DESIGN-STANCES **v1.1** (stance 3 + `color_scheme`) + DATA_DICTIONARY
+     (context `color_scheme`; per-appearance fill convention + opaque-occlusion convention
+     under `instrument_version`) — commit 69b68a3.
+   - T5b-1 typo: 14 new Apple-ramp styles (incl. rounded); 142 texts consolidated, 0 unmapped
+     (Foundations spec-sheet labels intentionally excluded).
+   - T5b-2 tokens: radius/sm 12→10 (matches reality), + radius/xs=4, radius/full=999; radius
+     code syntax fixed to `Radius.*`; ~180 paddings/115 gaps/32 radii bound. Literals kept by
+     design: device insets (59/34/21), composition margins (40/80, iPad gutter 20), r28/32/40.
+   - T5b-3 icons: `Icon` set (8 glyphs incl. chevron.left, SF-Symbol-named vectors, bound to
+     text/primary) + `IconButton` 44×44; all ⓘ/⚙/🗑/▼/▲ replaced (24 IconButtons, 4 chevrons);
+     "Value ›" composites split into text + chevron.right (10 rows).
+   - T5b-4: new primitives rainbow/accent-start #3A6FC4 (4.9:1) / accent-end #86489E (5.6:1),
+     semantic accent/stop-* realiased in rainbow modes only (circles untouched); TEXT props
+     added: InfoSheet ×4, SaveToast ×1, ExitSheet Title.
+   - T5b-5 coverage (56 frames total: Classic 30 / Rainbow 26): 9-card Home on iPhone (clipped
+     stack = scroll)/iPad 3×3/Mac; pole frames Separated+Concentric ×2 universes (PositionSlider
+     gained Position=Start/Mid/End axis); FR: Home iPad + Settings + ExitSheet (passes);
+     Dynamic Type XL measurement frame (passes no-scroll at 135%); 10 dark counterparts;
+     Mac window chrome (traffic lights + title) on 4 measurement windows + 2 new Home Mac;
+     History session-detail ("mean position" stats) + empty state ×2 universes; onboarding
+     dots + Continue + screen-2 alignment + Classic parity (3 screens).
+   - Final audit vs safe rects: **56 frames, 0 real violations** (1 documented false positive:
+     full-screen scrim on Exit Sheet FR overlay frame).
+5. ⬜ JALON 4 re-validation (Rémy, in Figma) → spec §14 update + final commit.
+
+## Known leftovers (phase 2/3, deliberate)
+
+- Modality descriptors for Proximity/Identification/Projection/Attribution/Observation are
+  stimulus-descriptive **placeholders** — finalize with ModalityDocumentation at phase-2 gate
+  (EN+FR); Attribution/Observation stimuli themselves are phase-2 design decisions.
+- ParticipantChip Guest variant text not linked to its Code prop (P-07 variant is).
+- Card tint swatches: new Home cards use default swatch; per-modality tint binding = phase 3.
+- Onboarding hero animation must oscillate, never "arrive" at concentric (stance gate NOTE).
+- A11y strings + celebration visual: re-gate at phase-2/3 (V3/V1 forward guards).
 
 ## Key IDs
 
